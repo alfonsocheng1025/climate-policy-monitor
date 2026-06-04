@@ -186,8 +186,9 @@ def from_worldbank():
         elif sheet.startswith("Cooperative"):
             buyer = _g(r, "Buyer", default=r.name)
             seller = _g(r, "Seller")
+            yr = _g(r, "Year of Agreement")
             out.append(common.record(
-                doc_id=f"wbco:{_slug(str(buyer) + '-' + str(seller or ''))}",
+                doc_id=f"wbco:{_slug(str(buyer) + '-' + str(seller or '') + '-' + str(yr or ''))}",
                 record_type="cooperative_approach",
                 title=f"{buyer} -> {seller}" if seller else str(buyer),
                 status=_g(r, "Status of Agreement"),
@@ -202,7 +203,7 @@ def from_worldbank():
                 continue
             price = _num(r[latest]) if latest is not None and latest in r.index else None
             out.append(common.record(
-                doc_id=f"wbcp:{_slug(name)}", record_type="carbon_price",
+                doc_id=f"wbcp:{_g(r, 'Unique ID') or _slug(name)}", record_type="carbon_price",
                 subnational=_g(r, "Jurisdiction covered", "Jurisdiction"),
                 title=str(name),
                 policy_instrument=_g(r, "Type", "Instrument Type"),
@@ -240,8 +241,9 @@ def from_unfccc_ndc():
         code = _g(r, "Code", "code")
         ver = _g(r, "Version", "version", default="")
         ftype = _g(r, "FileType", "file_type", default="")
+        lang = _g(r, "Language", "language", default="")
         out.append(common.record(
-            doc_id=f"ndc:{code}:{ver}:{ftype}".rstrip(":"),
+            doc_id=f"ndc:{code}:{ver}:{ftype}:{lang}".rstrip(":"),
             record_type="ndc",
             country_iso=_iso(code),
             title=_g(r, "Title", "Party"),

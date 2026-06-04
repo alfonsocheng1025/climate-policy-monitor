@@ -49,22 +49,25 @@ def load():
            f"ON CONFLICT (doc_id) DO UPDATE SET {updates}, last_updated_at=now()")
 
     by_source = {}
-    batch = []
+    batch = {}   # doc_id -> row tuple; dedupes duplicate doc_ids WITHIN a batch
+                 # (ON CONFLICT can't update the same row twice in one command)
     total = 0
 
     def flush():
         if batch:
-            execute_values(cur, sql, batch, page_size=1000)
+            execute_values(cur, sql, list(batch.values()), page_size=1000)
             conn.commit()
             batch.clear()
 
     with open(common.NORMALIZED, newline="", encoding="utf-8") as f:
         for r in csv.DictReader(f):
-            batch.append(tuple(_val(r, c) for c in INSERT_COLS))
+            did = r.get("doc_id")
+            if not did:
+                continue
+            batch[did] = tuple(_val(r, c) for c in INSERT_COLS)
             s = r.get("source") or "unknown"
             st = by_source.setdefault(s, {"upserted": 0, "new": 0})
             st["upserted"] += 1
-            did = r.get("doc_id")
             if did not in existing:
                 st["new"] += 1
                 existing.add(did)
