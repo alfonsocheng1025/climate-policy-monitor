@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useT } from '../../lib/i18n';
 import MetricMap from '../../components/MetricMap';
 import FilterPanel from '../../components/FilterPanel';
@@ -9,6 +10,7 @@ const METRICS = ['coverage', 'stringency', 'price', 'netzero'];
 
 export default function MapPage() {
   const { t } = useT();
+  const router = useRouter();
   const [metric, setMetric] = useState('coverage');
   const [map, setMap] = useState([]);
   const [rows, setRows] = useState([]);
@@ -41,7 +43,8 @@ export default function MapPage() {
       </div>
       <section style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 560px' }}>
-          <MetricMap data={map} invert={metric === 'netzero'} />
+          <MetricMap data={map} invert={metric === 'netzero'}
+            onSelect={(iso) => router.push('/country/' + iso)} />
         </div>
         <div style={{ flex: '1 1 380px' }}>
           <FilterPanel onChange={setFilters} />

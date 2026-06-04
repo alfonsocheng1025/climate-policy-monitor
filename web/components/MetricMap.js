@@ -4,7 +4,7 @@ import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
 // `data` = [{ country_iso, value }]. `invert` (e.g. net-zero target year) darkens lower values.
-export default function MetricMap({ data, invert = false }) {
+export default function MetricMap({ data, invert = false, onSelect }) {
   const map = Object.fromEntries((data || []).map((d) => [d.country_iso, Number(d.value)]));
   const vals = Object.values(map).filter((v) => !Number.isNaN(v));
   const min = vals.length ? Math.min(...vals) : 0;
@@ -26,7 +26,8 @@ export default function MetricMap({ data, invert = false }) {
             return (
               <Geography key={geo.rsmKey} geography={geo}
                 fill={color(iso)} stroke="#fff" strokeWidth={0.3}
-                style={{ default: { outline: 'none' }, hover: { fill: '#1d6b4f', outline: 'none' },
+                onClick={() => onSelect && iso && onSelect(iso)}
+                style={{ default: { outline: 'none' }, hover: { fill: '#1d6b4f', outline: 'none', cursor: onSelect ? 'pointer' : 'default' },
                   pressed: { outline: 'none' } }} />
             );
           })

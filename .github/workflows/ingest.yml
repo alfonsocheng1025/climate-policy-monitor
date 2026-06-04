@@ -2,7 +2,8 @@ name: Ingest Climate Policy Data
 
 on:
   schedule:
-    - cron: '0 3 * * 1'    # weekly bulk (Mon 03:00 UTC) — Tier A + Tier B
+    - cron: '0 3 1 * *'    # monthly bulk (1st @ 03:00 UTC) — Tier A + Tier B; these sources
+                           # update a few times/year at most, so monthly is plenty.
     - cron: '0 9 * * *'    # daily real-time pass — Tier B only (UNFCCC NDC diff, EUR-Lex)
   workflow_dispatch: {}     # manual = full run
 
