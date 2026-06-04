@@ -28,10 +28,15 @@
 ### 第 3 步：拿到两种连接串（关键，别用反）
 Supabase 有两种连接串，本项目两层各用一种：
 
-| 用途 | 端口 | 给谁 |
-|------|------|------|
-| **直连 Direct**（`db.<ref>.supabase.co:5432`） | 5432 | 采集层 → `ingest/.env` 的 `DATABASE_URL`（批量 upsert 用直连更稳） |
-| **池化 Pooled / Transaction**（`...pooler.supabase.com:6543`） | 6543 | 网站层 → `web/.env.local` 的 `POSTGRES_URL`（无服务器函数用池化） |
+| 用途 | 用哪个串 | 给谁 |
+|------|----------|------|
+| 批量入库 | **Session Pooler**（`aws-0-<region>.pooler.supabase.com:5432`，IPv4） | 采集层 → `ingest/.env` 的 `DATABASE_URL` |
+| 网站查询 | **Transaction Pooler**（`...pooler.supabase.com:6543`，IPv4） | 网站层 → `web/.env.local` 的 `POSTGRES_URL` |
+
+> ⚠️ **不要用 "Direct connection"（`db.<ref>.supabase.co`）**——它在免费版是 **IPv6-only**，
+> 多数 IPv4 / 代理网络（含很多中国网络）连不上。两层都用 **Pooler（IPv4）** 串最稳。
+> 在 Supabase **Project Settings → Database → Connection string** 里把标签切到 **Session pooler** /
+> **Transaction pooler** 复制。
 
 操作：左侧 **Project Settings（齿轮）→ Database** → 找到 **Connection string**：
 - 复制 **URI** 标签里的串；把 `[YOUR-PASSWORD]` 替换成第 1 步的密码。
@@ -104,7 +109,11 @@ npm run dev
 ---
 
 ## 常见问题
-- **直连 vs 池化用反**：采集=直连(5432)，网站=池化(6543)。这是最常见的坑。
+- **连库报错 `server closed the connection unexpectedly`，IP 是 `198.18.x.x`**：这是代理软件
+  (Clash/V2Ray) 的 **fake-ip**——HTTPS 能走代理(所以数据下载成功)，但裸 PostgreSQL TCP 走不了。
+  两个解法：① **最省事:改用 GitHub Actions 入库**(见第 9 步，从 GitHub 的网络连库，绕开本机网络);
+  ② 本机入库:把代理切到 **TUN 模式**(系统级 TCP 转发)或给 `*.pooler.supabase.com` 加直连/可转发 TCP 的规则，再重跑。
+- **必须用 Pooler 串**：免费版 Direct(`db.<ref>...`)是 IPv6-only，IPv4/代理网络连不上。用 Session/Transaction Pooler(IPv4)。
 - **SSL 报错**：Supabase 强制 SSL；采集脚本已自动追加 `sslmode=require`，`@vercel/postgres` 默认走 SSL。
 - **Python 3.14 装包失败**：一定用 3.11/3.12 venv。
 - **Vercel 构建找不到 Next**：确认 Root Directory 设成了 `web`。
