@@ -191,3 +191,33 @@ export async function lev2Heatmap(isos) {
        AND metric_year = (SELECT max(metric_year) FROM records WHERE source='OECD CAPMF')`,
     [list]);
 }
+
+// Promise × Action: net-zero pledge strength (promise) vs CAPMF stringency (action).
+export async function promiseAction() {
+  return await sql`
+    SELECT s.country_iso, s.v AS stringency, c.legal_force, c.target_year
+    FROM (SELECT country_iso, round(avg(metric_value)::numeric, 2) AS v FROM records
+          WHERE metric_name LIKE 'capmf_pol_stringency%' GROUP BY 1) s
+    JOIN (SELECT country_iso, max(legal_force) AS legal_force, min(target_year)::int AS target_year
+          FROM fact_commitment WHERE pledge_type='net_zero' AND country_iso IS NOT NULL
+            AND target_year IS NOT NULL GROUP BY 1) c ON c.country_iso = s.country_iso`;
+}
+
+// Bivariate map: per country coverage (policy count) + stringency (may be null).
+export async function bivariate() {
+  return await sql`
+    SELECT c.country_iso, c.n::int AS coverage, s.v AS stringency
+    FROM (SELECT country_iso, count(*) AS n FROM records
+          WHERE country_iso IS NOT NULL AND record_type IN ('law','policy') GROUP BY 1) c
+    LEFT JOIN (SELECT country_iso, round(avg(metric_value)::numeric, 2) AS v FROM records
+          WHERE metric_name LIKE 'capmf_pol_stringency%' GROUP BY 1) s ON s.country_iso = c.country_iso`;
+}
+
+// Per-country instrument-family counts (feature vectors for archetype clustering).
+export async function archetypeVectors() {
+  return await sql`
+    SELECT country_iso, canon_instrument, count(*)::int AS n
+    FROM v_records_canon
+    WHERE canon_instrument IS NOT NULL AND record_type IN ('law','policy') AND country_iso IS NOT NULL
+    GROUP BY 1, 2`;
+}
