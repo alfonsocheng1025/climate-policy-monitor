@@ -1,13 +1,18 @@
 """Tier A — Climate Policy Radar / CCLW from the open Hugging Face dataset.
 
 CPR has NO public API (2026); the open corpus is passage-level Parquet on Hugging Face:
-  ClimatePolicyRadar/all-document-text-data  (CC-BY-4.0, ~3.6 GB, lagged ~6 months)
+  ClimatePolicyRadar/all-document-text-data  (CC-BY-4.0, ~3.59 GB)
+Each ROW is a text block (passage), NOT a document — one document = many passages.
 We stream and aggregate passages to document level. Real fields are nested under
-`document_metadata.*` (verified 2026-06). For MVP we cap at CPR_MAX_DOCS documents;
-full-corpus ingest (downloading parquet shards) is a later optimization.
-Requires: pip install datasets.
+`document_metadata.*` (verified 2026-06), incl. the `document_metadata.metadata`
+concept tags (framework/response/hazard/sector/keyword/instrument).
+
+CPR_MAX_DOCS caps how many *documents* we ingest (default 200 = a sample; the full
+corpus is ~tens of thousands of docs). Full-corpus ingest = download the parquet
+shards and group by document_id (a later optimization). Requires: pip install datasets.
 """
 import os
+import json
 import pandas as pd
 import common
 
@@ -15,6 +20,7 @@ MAX_DOCS = int(os.environ.get("CPR_MAX_DOCS", "200"))
 HARD_PASSAGES = int(os.environ.get("CPR_MAX_PASSAGES", "150000"))
 OUT = "cpr_raw.csv"
 CAT_MAP = {"Legislative": "law", "Executive": "policy", "Litigation": "litigation"}
+CONCEPT_KEYS = ("framework", "response", "hazard", "sector", "keyword", "instrument")
 
 
 def _first(v):
@@ -45,14 +51,21 @@ def fetch():
             if did not in docs:
                 if len(docs) >= MAX_DOCS:
                     break
-                geo = row.get("document_metadata.geographies")
+                md = row.get("document_metadata.metadata") or {}
+                concepts = {k: md.get(k) for k in CONCEPT_KEYS if md.get(k)}
                 docs[did] = {
                     "document_id": did,
                     "document_title": (row.get("document_metadata.family_title")
                                        or row.get("document_metadata.document_title")),
-                    "geographies": _first(geo),
+                    "geographies": _first(row.get("document_metadata.geographies")),
                     "publication_ts": row.get("document_metadata.publication_ts"),
                     "source_url": row.get("document_metadata.source_url"),
+                    "description": (row.get("document_metadata.description")
+                                    or row.get("document_metadata.family_summary")),
+                    "doc_form": row.get("document_metadata.type"),
+                    "sector": _first(md.get("sector")),
+                    "instrument": _first(md.get("instrument")),
+                    "concepts": json.dumps(concepts, ensure_ascii=False) if concepts else None,
                     "category": row.get("document_metadata.category"),
                     "_text": [],
                 }
@@ -60,7 +73,8 @@ def fetch():
             if t:
                 docs[did]["_text"].append(str(t))
         for d in docs.values():
-            d["full_text"] = "\n".join(d.pop("_text"))[:200000]
+            ft = "\n".join(d.pop("_text"))[:200000]
+            d["full_text"] = ft or (d.get("description") or None)
             d["record_type"] = CAT_MAP.get(d.pop("category", None), "policy")
         df = pd.DataFrame(list(docs.values()))
         df.to_csv(common.raw_path(OUT), index=False)
