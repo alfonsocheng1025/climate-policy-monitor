@@ -1,0 +1,12 @@
+source_value,lifecycle
+In force,in_force
+Implemented,in_force
+Ended,ended
+Superseded,ended
+Abolished,ended
+Planned,proposed
+Draft,proposed
+Under review,proposed
+Under consideration,proposed
+Scheduled,proposed
+Unknown,unknown

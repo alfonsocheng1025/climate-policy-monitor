@@ -140,7 +140,66 @@ agreement flags. Conflicts are shown, not hidden (a research-credibility feature
 | 9 | **Pricing vs coverage** | WB price × % emissions covered, sized/colored by instrument |
 | 10 | **Litigation pressure** (if Sabin added) × policy density |
 
-## 6. Rich visualization scheme (mapped to the fused model)
+## 6. Policy diffusion (the dynamic / longitudinal core)
+
+Diffusion = how policies spread across jurisdictions over time. With fused adoption dates
+(`decision_date`) + `dim_country` (region / income / bloc) + canonical instruments, we can measure it:
+
+- **Adoption S-curve** — cumulative # of countries that have adopted an instrument family or a
+  *specific* instrument (carbon tax, ETS, feed-in tariff, net-zero target, NDC) over time. The
+  signature diffusion chart; reveals tipping points and saturation.
+- **Diffusion wavefront map** — choropleth colored by *year of first adoption* of instrument X, with a
+  **time slider/animation** → literally watch a policy spread across the world.
+- **Leader–laggard & lag-time** — rank countries by adoption year; distribution of lags behind the
+  first mover; early-adopter vs late-majority cohorts.
+- **Peer / regional co-movement** — adoption rate by region / income group / bloc over time. Clustered
+  adoption is the empirical signature of **learning, emulation, competition, coercion** (name the
+  candidate mechanism; don't over-claim causation).
+- **Adoption sequence** — typical within-country ordering of instrument families (e.g. *target →
+  subsidy → pricing*) via median adoption year per family → "policy pathway."
+- **EU coercion / transposition** — EUR-Lex directives followed by lagged member-state adoptions in
+  CCLW/CPDB: a clean, observable diffusion mechanism.
+- **Net-zero cascade** — the 2019–2021 surge of pledges, and escalation *up the legal-force ladder*
+  (declaration → policy → law) per country over time.
+- **NDC ratchet diffusion** — version upgrades (1.0→2.0→3.0→4.0, from UNFCCC) across countries over
+  time, cross-referenced with Climate Watch "Strengthened…" indicators (ambition up or flat?).
+
+*Data caveats (be honest in the UI):* CPDB/CPR `decision_date` give policy adoption years (✓). But the
+**net-zero pledge date** and the **carbon-pricing implementation year** aren't captured yet — a small
+normalize enhancement (pull WB "Year of Implementation"; use CPR net-zero law dates / UNFCCC LTS
+submission dates as pledge-date proxies). Flagged as a follow-up so diffusion charts don't silently
+mislead.
+
+## 7. Deeper analytical dimensions (richness & breadth)
+
+- **Portfolio diversity** — per country, a Shannon/Herfindahl index over instrument families & sectors
+  → "policy-mix breadth": balanced vs concentrated (e.g. all-subsidies vs a full toolkit).
+- **Gap analysis** — which (canonical sector × instrument) cells a country lacks **relative to its
+  regional / income peers** → "missing instruments," a directly actionable view.
+- **Coherence / consistency** — target↔instrument (net-zero pledge but no carbon price?),
+  stringency↔price (#4), ambition↔action (#2): flag internal contradictions.
+- **Stability / volatility** — churn = (ended + superseded) / total; policy turnover over time
+  (predictability matters to investors and is itself a research variable).
+- **Equity / climate-justice lens** — effort (coverage, stringency) vs **capacity** (GDP/capita) vs
+  **responsibility** (historical emissions) and **per-capita** normalization → who leads *adjusted for
+  wealth/responsibility*. Strong fit for communication framing.
+- **Co-benefit framing** — CPDB `policy_objective` co-tags (air pollution, energy security, energy
+  access, economic development): *how* countries justify climate action — a discourse/communication signal.
+- **Country archetypes (clustering)** — cluster nations by their (sector × instrument) stringency /
+  coverage vectors → "policy families of states" (carbon-pricing pioneers, regulation-heavy,
+  subsidy-driven, target-only/nascent). Hierarchical or k-means; label the clusters.
+- **Composite comprehensiveness index** — coverage × stringency × legal-force into one score, with
+  **explicit caveats + a sensitivity toggle** (indices invite misreading; show the components).
+- **Cross-monitor link (unique to your ecosystem)** — join **Policy** × **News**
+  (`monitor.newsfindsme`) × **Papers** (`pmonitor`) by country / topic / time: *attention vs evidence
+  vs action*. Does media or research attention **lead or lag** policy adoption? A genuinely novel
+  science-communication analysis only the ZJU-CMIC portal can run — and a natural flagship "Insight."
+- **Discourse / text layer** — CPR concept & keyword trends over time, framing analysis; full text
+  retrievable on demand via the traceability IDs already stored in `raw`.
+- **Litigation accountability** (if Sabin added) — case counts vs policy gaps / stringency: where
+  courts fill the policy vacuum.
+
+## 8. Rich visualization scheme (mapped to the fused model)
 - **Bivariate choropleth** — two metrics at once (e.g. stringency × emissions, or coverage × price). 2-D color legend.
 - **Stringency genome heatmap** — country × **CAPMF LEV2 (15)**; cell = stringency, optional count as opacity. (Now feasible & meaningful.)
 - **Sankey** — country → canonical sector → instrument family (policy-count flows).
@@ -152,19 +211,32 @@ agreement flags. Conflicts are shown, not hidden (a research-credibility feature
 - **Streamgraph** — adoption over time by instrument family (composition-through-time).
 - **Concept network** — CPR `keyword`/`hazard` co-occurrence (where tagged).
 - **Drill path** — bivariate map → country profile → sector → instrument family → policy family → document → source `raw`.
+- **Adoption S-curves** — small multiples, one per instrument family; cumulative adopters over time (diffusion §6).
+- **Diffusion wavefront map + time slider** — year-of-first-adoption choropleth, animated to show spread.
+- **Ridgeline / streamgraph by region** — adoptions over time per region (peer co-movement).
+- **Country-archetype scatter** — 2-D projection (PCA/MDS) of countries colored by policy-portfolio cluster.
+- **Equity quadrant** — effort (stringency/coverage) vs responsibility/capacity (per-capita emissions / GDP).
+- **Cross-monitor timeline** — news attention (`monitor`) vs research (`pmonitor`) vs policy adoption for a
+  topic/country: the flagship "attention vs evidence vs action" Insight unique to your ecosystem.
 - **Insights stories** (science-communication layer): "The gap between pledges and laws" (#3),
-  "Breadth isn't depth" (#1), "Who actually prices carbon" (#4) — annotated versions of the above.
+  "Breadth isn't depth" (#1), "Who actually prices carbon" (#4), "Watching net-zero spread" (§6),
+  "Attention vs action" (cross-monitor) — annotated versions of the above.
 
 Every view carries the house rules from `PLAN.md` §6: bilingual, provenance + agreement flags,
 export + citation, colorblind-safe, honest encodings (count ≠ stringency ≠ ambition; gaps shown).
 
-## 7. Build path (incremental, no re-ingest)
-1. **Crosswalks + dim_country** — author `db/crosswalks/*.csv` (sector, instrument, status, legal_force, country).
-2. **Canonicalize in `normalize.py`** — split CPDB multi-tags, pivot CW content, dedup UNFCCC, map to
-   canonical columns; fuse net-zero. (Pure code; re-runs over existing raws.)
-3. **Fact views** in `db/schema.sql` — `fact_policy` / `fact_metric` / `fact_commitment` + bridges.
-4. **Cross-analysis API + viz** — add the scatters, bivariate map, LEV2 heatmap, Sankey, net-zero ladder.
-5. **Entity resolution** — CPR families first (free), then fuzzy cross-source `policy_link` (later phase).
+## 9. Build path (incremental, no re-ingest)
+1. **Fusion layer as a view over `records`** — `db/fusion.sql` (self-contained, run once in Supabase
+   *after* the data load): crosswalk + `dim_country` reference tables (+seed INSERTs), canonical views
+   (`v_records_canon`), grain-separated facts (`fact_policy` / `fact_metric` / `fact_commitment`), and
+   diffusion views (`v_adoption`, `v_diffusion_curve`). **Touches nothing in the running ingest.**
+2. **Date-capture enhancement** (for diffusion) — small `normalize.py` tweak: WB implementation year,
+   net-zero pledge-date proxy. (Next ingest cycle.)
+3. **Cross-analysis API + viz** — scatters (breadth×depth, promise×action, equity), bivariate map,
+   LEV2 stringency heatmap, Sankey, net-zero ladder, S-curves + wavefront map.
+4. **Country archetypes & composite index** — clustering + index with sensitivity toggle.
+5. **Entity resolution** — CPR `family_import_id` first (free), then fuzzy cross-source `policy_link`.
+6. **Cross-monitor link** — join policy × news × papers (ZJU-CMIC flagship Insight).
 
-The crosswalk CSVs are the real intellectual asset — they should be **version-controlled and citable**,
-and ideally reviewed by a domain expert (you).
+The crosswalks (embedded in `db/fusion.sql`, mirrored to `db/crosswalks/*.csv`) are the real
+intellectual asset — **version-controlled, citable, and ideally reviewed by a domain expert (you)**.
