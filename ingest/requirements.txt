@@ -1,0 +1,9 @@
+# Use Python 3.11 or 3.12 — wheels for pandas/psycopg2/pyarrow may be missing on 3.14.
+pandas
+requests
+psycopg2-binary
+python-dotenv
+openpyxl          # World Bank carbon pricing .xlsx
+pyarrow           # Parquet support
+# CPR full-corpus streaming (optional; installed separately in CI):
+# datasets

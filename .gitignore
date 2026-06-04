@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+.vercel/
+
+# Env
+.env
+.env.local
+.env*.local
+
+# Data: keep the normalized snapshot (reproducibility); ignore large/raw intermediates
+data/*_raw.csv
+data/*.parquet
+data/_harvest_manifest.json
+!data/.gitkeep
+!data/records_normalized.csv
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

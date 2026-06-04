@@ -1,0 +1,15 @@
+field,layer,type,description,source
+doc_id,key,string,唯一标识(源前缀+原始ID),CPR/CPDB
+country_iso,parse,string,ISO-3 国家代码(融合主键),All
+title,parse,text,政策/法律名称,CPR/CPDB
+doc_type,parse,enum,法律/政策/NDC/诉讼,CPR
+sector,parse,enum,能源/交通/工业/建筑/农业,CPDB
+policy_instrument,parse,enum,政策工具(碳税/补贴/标准等),CPDB
+status,parse,enum,拟议/实施中/已废止,CPDB
+decision_date,parse,date,采纳/生效时间,CPDB
+capmf_score,quant,float,OECD CAPMF 政策强度分数,OECD CAPMF
+concepts,parse,json,CPR 知识图谱概念标签,CPR
+full_text,raw,longtext,解析后纯文本全文,CPR parser
+source_pdf_url,raw,url,原始 PDF/网页链接,CPR ingest
+source,meta,string,数据源标识,All
+retrieved_at,meta,timestamp,抓取时间戳(可复现),All
