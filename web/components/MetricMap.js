@@ -1,7 +1,8 @@
 'use client';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 
-const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+// Served from /public (same-origin) — avoids the jsdelivr CDN being blocked/slow in China.
+const GEO_URL = '/countries-110m.json';
 
 // `data` = [{ country_iso, value }]. `invert` (e.g. net-zero target year) darkens lower values.
 export default function MetricMap({ data, invert = false, onSelect }) {
