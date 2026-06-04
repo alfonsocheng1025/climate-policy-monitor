@@ -80,6 +80,10 @@ so the transparency dashboard can show "X fetched, Y upserted, last update …" 
 
 ## 5. Data model rethink
 
+> 🔗 The deep heterogeneous-source **fusion strategy** (grain & field semantics, conformed
+> taxonomies + crosswalks, entity resolution, cross-analyses, rich visualization) is in
+> [`FUSION.md`](./FUSION.md). The note below is the original landing-schema sketch.
+
 The single-shape `policies` table cannot cleanly hold laws + scores + NDCs + net-zero pledges + litigation.
 Proposed core table (`records`):
 
