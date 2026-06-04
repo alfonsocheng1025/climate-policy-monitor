@@ -152,3 +152,42 @@ export async function countryProfile(iso) {
      FROM records WHERE country_iso=$1 ORDER BY last_updated_at DESC NULLS LAST LIMIT 300`, [iso]);
   return { iso, kpis: kpisRows[0], trajectory, records };
 }
+
+// ---- Fusion cross-analyses (over fact_* / v_* views from db/fusion.sql) ----
+
+export async function diffusion() {
+  return await sql`SELECT canon_instrument, year, cumulative_adopters
+    FROM v_diffusion_curve WHERE year IS NOT NULL AND canon_instrument IS NOT NULL
+    ORDER BY canon_instrument, year`;
+}
+
+export async function breadthDepth() {
+  return await sql`
+    SELECT p.country_iso, p.n::int AS policies, s.v AS stringency
+    FROM (SELECT country_iso, count(*) AS n FROM records
+          WHERE record_type IN ('law','policy') AND country_iso IS NOT NULL GROUP BY 1) p
+    JOIN (SELECT country_iso, round(avg(metric_value)::numeric, 2) AS v FROM records
+          WHERE metric_name LIKE 'capmf_pol_stringency%' GROUP BY 1) s
+      ON s.country_iso = p.country_iso`;
+}
+
+export async function netzeroLadder() {
+  return await sql`
+    SELECT country_iso, title, target_year::int AS target_year, legal_force, legal_force_label
+    FROM fact_commitment
+    WHERE pledge_type='net_zero' AND target_year IS NOT NULL AND country_iso IS NOT NULL
+    ORDER BY legal_force DESC, target_year`;
+}
+
+export async function lev2Heatmap(isos) {
+  const list = (isos || []).filter(Boolean).slice(0, 8);
+  if (!list.length) return [];
+  return await sql.unsafe(
+    `SELECT country_iso, title AS area, metric_value AS stringency
+     FROM records
+     WHERE source='OECD CAPMF' AND metric_name LIKE 'capmf_pol_stringency%'
+       AND split_part(doc_id, ':', 3) ~ '^LEV2_'
+       AND country_iso = ANY($1)
+       AND metric_year = (SELECT max(metric_year) FROM records WHERE source='OECD CAPMF')`,
+    [list]);
+}
