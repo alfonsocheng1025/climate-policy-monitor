@@ -1,85 +1,141 @@
-"""Tier A — Climate Policy Radar / CCLW from the open Hugging Face dataset.
+"""Tier A — Climate Policy Radar / CCLW: full document CATALOG.
 
-CPR has NO public API (2026); the open corpus is passage-level Parquet on Hugging Face:
-  ClimatePolicyRadar/all-document-text-data  (CC-BY-4.0, ~3.59 GB)
-Each ROW is a text block (passage), NOT a document — one document = many passages.
-We stream and aggregate passages to document level. Real fields are nested under
-`document_metadata.*` (verified 2026-06), incl. the `document_metadata.metadata`
-concept tags (framework/response/hazard/sector/keyword/instrument).
+CPR has NO public API (2026); the open corpus is passage-level Parquet on Hugging Face
+(ClimatePolicyRadar/all-document-text-data, CC-BY-4.0, ~3.59 GB, 48 shards x 1.5M rows).
+Each ROW is a text passage, but document metadata repeats on every row — so we read
+ONLY the metadata columns (column projection) and dedup by document_id. This yields the
+whole corpus's catalog (title/country/date/sector/instrument/concepts/summary) cheaply,
+WITHOUT the bulk passage text (Option A: fits a 500 MB DB). `description`/summary becomes
+the searchable text. Requires: huggingface_hub, pyarrow.
 
-CPR_MAX_DOCS caps how many *documents* we ingest (default 200 = a sample; the full
-corpus is ~tens of thousands of docs). Full-corpus ingest = download the parquet
-shards and group by document_id (a later optimization). Requires: pip install datasets.
+Env: CPR_MAX_DOCS (0=all), CPR_MAX_SHARDS (0=all), CPR_SHARD_START (0).
 """
 import os
 import json
 import pandas as pd
 import common
 
-MAX_DOCS = int(os.environ.get("CPR_MAX_DOCS", "200"))
-HARD_PASSAGES = int(os.environ.get("CPR_MAX_PASSAGES", "150000"))
 OUT = "cpr_raw.csv"
+REPO = "datasets/ClimatePolicyRadar/all-document-text-data"
+MAX_DOCS = int(os.environ.get("CPR_MAX_DOCS", "0"))
+MAX_SHARDS = int(os.environ.get("CPR_MAX_SHARDS", "0"))
+SHARD_START = int(os.environ.get("CPR_SHARD_START", "0"))
 CAT_MAP = {"Legislative": "law", "Executive": "policy", "Litigation": "litigation"}
-CONCEPT_KEYS = ("framework", "response", "hazard", "sector", "keyword", "instrument")
+CONCEPT_KEYS = ("framework", "response", "hazard", "sector", "keyword", "instrument", "topic")
+COLS = [
+    "document_id", "document_metadata.family_title", "document_metadata.document_title",
+    "document_metadata.geographies", "document_metadata.publication_ts",
+    "document_metadata.source_url", "document_metadata.description",
+    "document_metadata.collection_summary", "document_metadata.type",
+    "document_metadata.category", "document_metadata.metadata",
+]
 
 
 def _first(v):
-    if isinstance(v, (list, tuple)) and v:
-        return v[0]
-    return v
+    if v is None:
+        return None
+    if isinstance(v, (str, bytes, dict)):
+        return v if isinstance(v, str) else None
+    try:
+        return v[0] if len(v) else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _tolist(v):
+    """Concept tags may be None, a string, or a multi-value array. Normalize to
+    a clean list (or None) without ever calling bool() on an array."""
+    if v is None:
+        return None
+    if isinstance(v, (str, bytes)):
+        return [str(v)]
+    try:
+        out = [str(x) for x in v if x is not None]
+        return out or None
+    except TypeError:
+        return [str(v)]
+
+
+def _g(row, key):
+    v = row.get(key)
+    return None if v is None or (isinstance(v, float) and pd.isna(v)) else v
 
 
 def fetch():
     common.ensure_data_dir()
     os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
     try:
-        from datasets import load_dataset
+        from huggingface_hub import HfFileSystem
+        import pyarrow.parquet as pq
     except Exception as e:  # noqa: BLE001
-        common.record_fetch("CPR/CCLW", 0, "error", f"datasets not installed: {e}")
-        print("[CPR] `datasets` not installed; skipping (pip install datasets)")
+        common.record_fetch("CPR/CCLW", 0, "error", f"deps missing: {e}")
+        print("[CPR] need huggingface_hub + pyarrow (pip install)")
         return None
     try:
-        ds = load_dataset("ClimatePolicyRadar/all-document-text-data",
-                          split="train", streaming=True)
+        fs = HfFileSystem()
+        files = sorted(fs.glob(REPO + "/**/*.parquet"))
+        if SHARD_START:
+            files = files[SHARD_START:]
+        if MAX_SHARDS:
+            files = files[:MAX_SHARDS]
         docs = {}
-        for i, row in enumerate(ds):
-            if i >= HARD_PASSAGES:
-                break
-            did = row.get("document_id")
-            if not did:
-                continue
-            if did not in docs:
-                if len(docs) >= MAX_DOCS:
+        for fi, f in enumerate(files):
+            try:
+                pf = pq.ParquetFile(fs.open(f))
+                for rg in range(pf.num_row_groups):
+                    tbl = pf.read_row_group(rg, columns=COLS)
+                    ids = tbl.column("document_id").to_pylist()
+                    new_idx, seen = [], set()
+                    for i, did in enumerate(ids):
+                        if did and did not in docs and did not in seen:
+                            seen.add(did)
+                            new_idx.append(i)
+                    if not new_idx:
+                        continue
+                    sub = tbl.take(new_idx).to_pandas()
+                    for _, row in sub.iterrows():
+                        did = row["document_id"]
+                        try:
+                            md = row.get("document_metadata.metadata")
+                            md = md if isinstance(md, dict) else {}
+                            concepts = {}
+                            for ck in CONCEPT_KEYS:
+                                cv = _tolist(md.get(ck))
+                                if cv:
+                                    concepts[ck] = cv
+                            sec = concepts.get("sector")
+                            inst = concepts.get("instrument")
+                            docs[did] = {
+                                "document_id": did,
+                                "document_title": (_g(row, "document_metadata.family_title")
+                                                   or _g(row, "document_metadata.document_title")),
+                                "geographies": _first(row.get("document_metadata.geographies")),
+                                "publication_ts": _g(row, "document_metadata.publication_ts"),
+                                "source_url": _g(row, "document_metadata.source_url"),
+                                "description": (_g(row, "document_metadata.description")
+                                                or _g(row, "document_metadata.collection_summary")),
+                                "doc_form": _g(row, "document_metadata.type"),
+                                "sector": sec[0] if sec else None,
+                                "instrument": inst[0] if inst else None,
+                                "concepts": json.dumps(concepts, ensure_ascii=False) if concepts else None,
+                                "record_type": CAT_MAP.get(_g(row, "document_metadata.category"), "policy"),
+                            }
+                        except Exception:  # noqa: BLE001
+                            continue
+                        if MAX_DOCS and len(docs) >= MAX_DOCS:
+                            break
+                    if MAX_DOCS and len(docs) >= MAX_DOCS:
+                        break
+                print(f"[CPR] shard {fi + 1}/{len(files)}: {len(docs)} docs so far")
+                if MAX_DOCS and len(docs) >= MAX_DOCS:
                     break
-                md = row.get("document_metadata.metadata") or {}
-                concepts = {k: md.get(k) for k in CONCEPT_KEYS if md.get(k)}
-                docs[did] = {
-                    "document_id": did,
-                    "document_title": (row.get("document_metadata.family_title")
-                                       or row.get("document_metadata.document_title")),
-                    "geographies": _first(row.get("document_metadata.geographies")),
-                    "publication_ts": row.get("document_metadata.publication_ts"),
-                    "source_url": row.get("document_metadata.source_url"),
-                    "description": (row.get("document_metadata.description")
-                                    or row.get("document_metadata.family_summary")),
-                    "doc_form": row.get("document_metadata.type"),
-                    "sector": _first(md.get("sector")),
-                    "instrument": _first(md.get("instrument")),
-                    "concepts": json.dumps(concepts, ensure_ascii=False) if concepts else None,
-                    "category": row.get("document_metadata.category"),
-                    "_text": [],
-                }
-            t = row.get("text_block.text")
-            if t:
-                docs[did]["_text"].append(str(t))
-        for d in docs.values():
-            ft = "\n".join(d.pop("_text"))[:200000]
-            d["full_text"] = ft or (d.get("description") or None)
-            d["record_type"] = CAT_MAP.get(d.pop("category", None), "policy")
+            except Exception as e:  # noqa: BLE001
+                print(f"[CPR] shard {f} error (skipped): {e}")
         df = pd.DataFrame(list(docs.values()))
+        df["full_text"] = df["description"]  # Option A: summary is the searchable text
         df.to_csv(common.raw_path(OUT), index=False)
-        common.record_fetch("CPR/CCLW", len(df), "partial", f"capped at {MAX_DOCS} docs")
-        print(f"[CPR] saved {len(df)} documents")
+        common.record_fetch("CPR/CCLW", len(df), message="catalog: metadata+summary, no passage text")
+        print(f"[CPR] saved {len(df)} documents (catalog)")
         return df
     except Exception as e:  # noqa: BLE001
         common.record_fetch("CPR/CCLW", 0, "error", str(e))
