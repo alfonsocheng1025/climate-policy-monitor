@@ -37,6 +37,14 @@ def _year(v):
         return None
 
 
+def _yr(v):
+    """First 4-digit year in a value (cleans e.g. '2008.0' -> '2008')."""
+    if v is None:
+        return None
+    m = re.search(r"\d{4}", str(v))
+    return m.group(0) if m else None
+
+
 def _slug(s):
     return re.sub(r"[^a-z0-9]+", "-", str(s).lower()).strip("-")[:80]
 
@@ -45,17 +53,22 @@ def from_cpdb():
     df = common.safe_read_csv("cpdb_raw.csv")
     out = []
     for _, r in df.iterrows():
-        pid = _g(r, "Policy ID", "policy_id", default=r.name)
+        pid = _g(r, "policy_id", default=r.name)
+        sten = _num(_g(r, "stringency"))
         out.append(common.record(
             doc_id=f"cpdb:{pid}", record_type="policy",
-            country_iso=_iso(_g(r, "ISO", "Country ISO", "iso")),
-            title=_g(r, "Policy name", "Policy", "policy_name"),
-            sector=_g(r, "Sector name", "Sector"),
-            policy_instrument=_g(r, "Type of policy instrument", "Policy instrument"),
-            status=_g(r, "Policy status", "Status"),
-            decision_date=_g(r, "Date of decision", "Decision date"),
+            country_iso=_iso(_g(r, "country_iso")),
+            subnational=_g(r, "subnational_region", "policy_city_or_local"),
+            title=_g(r, "policy_title", "policy_name"),
+            sector=_g(r, "sector"),
+            policy_instrument=_g(r, "policy_instrument"),
+            status=_g(r, "policy_status"),
+            decision_date=_yr(_g(r, "decision_date")),
+            full_text=_g(r, "policy_description"),
+            metric_name="cpdb_stringency" if sten is not None else None,
+            metric_value=sten,
+            source_url=_g(r, "reference") or "https://climatepolicydatabase.org",
             source="CPDB", license="CC-BY-4.0",
-            source_url="https://climatepolicydatabase.org",
         ))
     return out
 
@@ -119,19 +132,27 @@ def from_cpr():
 
 def from_worldbank():
     df = common.safe_read_csv("worldbank_carbon_raw.csv")
+    if df.empty:
+        return []
+    # Current price = the latest year-keyed column (headers like '2026' / '2026.0').
+    year_cols = [c for c in df.columns if re.fullmatch(r"\d{4}(\.0)?", str(c).strip())]
+    year_cols.sort(key=lambda c: int(float(c)))
+    latest = year_cols[-1] if year_cols else None
     out = []
     for _, r in df.iterrows():
-        name = _g(r, "Instrument name", "Name", "instrument", default=r.name)
+        name = _g(r, "Instrument name", "Name of the initiative", default=r.name)
+        if not name:
+            continue
+        price = _num(r[latest]) if latest is not None and latest in r.index else None
+        # NOTE: 'Jurisdiction covered' is a name (often subnational); ISO crosswalk is a TODO.
         out.append(common.record(
             doc_id=f"wbcp:{_slug(name)}", record_type="carbon_price",
-            country_iso=_iso(_g(r, "Jurisdiction ISO", "ISO", "iso3")),
-            subnational=_g(r, "Subnational"),
+            subnational=_g(r, "Jurisdiction covered", "Jurisdiction"),
             title=str(name),
-            policy_instrument=_g(r, "Type", "Instrument type"),
+            policy_instrument=_g(r, "Type", "Instrument Type"),
             status=_g(r, "Status"),
-            metric_name="carbon_price",
-            metric_value=_num(_g(r, "Price", "Price_rate", "price")),
-            metric_unit="USD/tCO2e",
+            metric_name="carbon_price", metric_value=price, metric_unit="USD/tCO2e",
+            metric_year=_year(latest) if latest else None,
             source="World Bank", license="CC-BY-4.0",
             source_url="https://carbonpricingdashboard.worldbank.org",
         ))
@@ -142,14 +163,14 @@ def from_netzero():
     df = common.safe_read_csv("netzero_raw.csv")
     out = []
     for _, r in df.iterrows():
-        ent = _g(r, "Entity", "entity", default=r.name)
+        ent = _g(r, "entity", "Entity", default=r.name)
         out.append(common.record(
             doc_id=f"nzt:{_slug(ent)}", record_type="net_zero",
-            country_iso=_iso(_g(r, "Code", "iso_code")),
+            country_iso=_iso(_g(r, "code", "Code", "iso_code")),
             title=str(ent),
-            status=_g(r, "status", "target_status"),
+            status=_g(r, "net_zero_status", "status", "target_status"),
             metric_name="net_zero_target_year",
-            metric_value=_num(_g(r, "target_year", "year")),
+            metric_value=_num(_g(r, "year", "target_year")),
             source="Net Zero Tracker", license="CC-BY",
             source_url="https://zerotracker.net",
         ))

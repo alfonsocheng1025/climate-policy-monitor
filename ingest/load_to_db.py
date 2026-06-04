@@ -16,6 +16,12 @@ def _val(row, c):
     v = row.get(c)
     if v in ("", None):
         return None
+    if c == "metric_year":
+        # pandas writes ints as '2026.0'; the column is INTEGER.
+        try:
+            return int(float(v))
+        except (TypeError, ValueError):
+            return None
     if c == "concepts":
         try:
             json.loads(v)

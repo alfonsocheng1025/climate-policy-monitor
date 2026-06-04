@@ -28,7 +28,7 @@ export async function adoptionByYear() {
 export async function mapMetric(metric) {
   if (!METRICS.has(metric)) metric = 'coverage';
   if (metric === 'stringency') {
-    const { rows } = await sql`SELECT country_iso, max(metric_value) AS value
+    const { rows } = await sql`SELECT country_iso, round(avg(metric_value)::numeric, 2) AS value
       FROM records WHERE metric_name LIKE 'capmf_pol_stringency%' AND country_iso IS NOT NULL
       GROUP BY country_iso`;
     return rows;

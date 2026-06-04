@@ -1,15 +1,26 @@
-field,layer,type,description,source
-doc_id,key,string,唯一标识(源前缀+原始ID),CPR/CPDB
-country_iso,parse,string,ISO-3 国家代码(融合主键),All
-title,parse,text,政策/法律名称,CPR/CPDB
-doc_type,parse,enum,法律/政策/NDC/诉讼,CPR
-sector,parse,enum,能源/交通/工业/建筑/农业,CPDB
-policy_instrument,parse,enum,政策工具(碳税/补贴/标准等),CPDB
-status,parse,enum,拟议/实施中/已废止,CPDB
-decision_date,parse,date,采纳/生效时间,CPDB
-capmf_score,quant,float,OECD CAPMF 政策强度分数,OECD CAPMF
-concepts,parse,json,CPR 知识图谱概念标签,CPR
-full_text,raw,longtext,解析后纯文本全文,CPR parser
-source_pdf_url,raw,url,原始 PDF/网页链接,CPR ingest
+field,role,type,description,source
+doc_id,key,string,源前缀唯一标识(如 cpdb:123 / eurlex:32026R0667),All
+record_type,key,enum,law|policy|ndc|net_zero|carbon_price|litigation|stringency_score,All
+country_iso,dim,string,ISO-3 国家代码(融合主键; EU 用 EUU),All
+subnational,dim,string,州/省/市或司法辖区,CPDB/World Bank
+title,field,text,政策/法律/记录名称,All
+title_en,field,text,英文名称(如有),All
+sector,dim,enum,部门(能源/交通/工业/建筑/农业等),CPDB/CAPMF
+policy_instrument,dim,enum,政策工具(碳税/ETS/补贴/标准等),CPDB/World Bank
+status,dim,enum,状态(实施中/拟议/已废止等),CPDB/NDC/World Bank
+decision_date,field,date,采纳/生效/文件日期,CPDB/CPR/EUR-Lex
+submission_date,field,date,提交日期(NDC),UNFCCC/Climate Watch
+version,field,string,版本号(NDC),UNFCCC
+metric_name,quant,string,指标名(capmf_*/carbon_price/net_zero_target_year/cpdb_stringency),CAPMF/WB/NZT/CPDB
+metric_value,quant,float,指标数值,CAPMF/WB/NZT/CPDB
+metric_unit,quant,string,单位(0-10 / USD/tCO2e 等),CAPMF/WB
+metric_year,quant,int,指标年份,CAPMF/WB
+concepts,field,json,知识图谱概念标签,CPR
+full_text,raw,longtext,全文/政策描述,CPR/CPDB/Climate Watch
+source_url,meta,url,来源页面链接,All
+source_pdf_url,raw,url,原始 PDF/文件链接,CPR/UNFCCC/EUR-Lex
 source,meta,string,数据源标识,All
+license,meta,string,许可(CC-BY-4.0 等),All
 retrieved_at,meta,timestamp,抓取时间戳(可复现),All
+first_seen_at,meta,timestamp,首次出现时间(实时信号),DB
+last_updated_at,meta,timestamp,最近更新时间,DB
