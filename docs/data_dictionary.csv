@@ -21,6 +21,7 @@ source_url,meta,url,来源页面链接,All
 source_pdf_url,raw,url,原始 PDF/文件链接,CPR/UNFCCC/EUR-Lex
 source,meta,string,数据源标识,All
 license,meta,string,许可(CC-BY-4.0 等),All
+raw,meta,json,完整原始行(所有字段);为省空间 CAPMF 与 CW ndc_content 不存,All
 retrieved_at,meta,timestamp,抓取时间戳(可复现),All
 first_seen_at,meta,timestamp,首次出现时间(实时信号),DB
 last_updated_at,meta,timestamp,最近更新时间,DB

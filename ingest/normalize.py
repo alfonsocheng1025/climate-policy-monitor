@@ -102,7 +102,7 @@ def from_capmf():
             metric_value=_num(val),
             metric_unit=_g(r, "Unit of measure", "UNIT_MEASURE"),
             metric_year=_year(yr), decision_date=str(yr) if yr else None,
-            source="OECD CAPMF", license="OECD", raw=_rawjson(r),
+            source="OECD CAPMF", license="OECD",  # raw omitted: high-volume source (~390k rows)
             source_url="https://www.oecd.org/en/data/datasets/"
                        "climate-actions-and-policies-measurement-framework.html",
         ))
@@ -124,7 +124,9 @@ def from_climatewatch():
             title=_g(r, "indicator_name", "category", "sector"),
             sector=_g(r, "sector"),
             full_text=_g(r, "value", "description"),
-            source="Climate Watch", license="CC-BY-4.0", raw=_rawjson(r),
+            source="Climate Watch", license="CC-BY-4.0",
+            # raw omitted for ndc_content (high-volume, ~373k rows); kept for lts/net_zero
+            raw=(None if ds == "ndc_content" else _rawjson(r)),
             source_url="https://www.climatewatchdata.org",
         ))
     return out

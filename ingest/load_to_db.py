@@ -1,8 +1,9 @@
 """Upsert data/records_normalized.csv into Postgres `records`, then write per-source
 rows into `harvest_runs` (the Mode 9 transparency dashboard).
 
-Upsert keys on doc_id. first_seen_at is preserved across runs (DB default on insert,
-untouched on conflict); last_updated_at is bumped on every conflicting update.
+Streams the CSV in batches (memory-safe for ~750k+ rows). Upsert keys on doc_id;
+first_seen_at is preserved across runs (DB default on insert, untouched on conflict),
+last_updated_at is bumped on every conflicting update.
 """
 import csv
 import json
@@ -10,6 +11,7 @@ import datetime
 import common
 
 INSERT_COLS = common.COLUMNS  # first_seen_at / last_updated_at are DB-managed
+BATCH = 5000
 
 
 def _val(row, c):
@@ -34,13 +36,6 @@ def _val(row, c):
 def load():
     from psycopg2.extras import execute_values
 
-    with open(common.NORMALIZED, newline="", encoding="utf-8") as f:
-        reader = list(csv.DictReader(f))
-    if not reader:
-        print("[load] nothing to load")
-        return
-
-    rows = [tuple(_val(r, c) for c in INSERT_COLS) for r in reader]
     conn = common.get_conn()
     cur = conn.cursor()
 
@@ -52,18 +47,41 @@ def load():
     updates = ", ".join(f"{c}=EXCLUDED.{c}" for c in INSERT_COLS if c != "doc_id")
     sql = (f"INSERT INTO records ({collist}) VALUES %s "
            f"ON CONFLICT (doc_id) DO UPDATE SET {updates}, last_updated_at=now()")
-    execute_values(cur, sql, rows, page_size=1000)
+
+    by_source = {}
+    batch = []
+    total = 0
+
+    def flush():
+        if batch:
+            execute_values(cur, sql, batch, page_size=1000)
+            conn.commit()
+            batch.clear()
+
+    with open(common.NORMALIZED, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            batch.append(tuple(_val(r, c) for c in INSERT_COLS))
+            s = r.get("source") or "unknown"
+            st = by_source.setdefault(s, {"upserted": 0, "new": 0})
+            st["upserted"] += 1
+            did = r.get("doc_id")
+            if did not in existing:
+                st["new"] += 1
+                existing.add(did)
+            total += 1
+            if len(batch) >= BATCH:
+                flush()
+                print(f"[load] {total} rows upserted...")
+    flush()
+
+    if total == 0:
+        print("[load] nothing to load")
+        cur.close()
+        conn.close()
+        return
 
     # Per-source harvest_runs rows (combine fetch manifest with upsert counts).
     manifest = common.read_manifest()
-    by_source = {}
-    for r in reader:
-        s = r.get("source") or "unknown"
-        st = by_source.setdefault(s, {"upserted": 0, "new": 0})
-        st["upserted"] += 1
-        if r.get("doc_id") not in existing:
-            st["new"] += 1
-
     now = datetime.datetime.now(datetime.timezone.utc)
     for s, st in by_source.items():
         m = manifest.get(s, {})
@@ -79,7 +97,7 @@ def load():
     conn.commit()
     cur.close()
     conn.close()
-    print(f"[load] upserted {len(rows)} rows across {len(by_source)} sources")
+    print(f"[load] upserted {total} rows across {len(by_source)} sources")
 
 
 if __name__ == "__main__":
