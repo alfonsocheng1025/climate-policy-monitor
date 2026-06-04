@@ -119,10 +119,10 @@ def from_cpr():
         did = _g(r, "document_id", default=r.name)
         url = _g(r, "source_url")
         out.append(common.record(
-            doc_id=f"cpr:{did}", record_type="law",
+            doc_id=f"cpr:{did}", record_type=_g(r, "record_type") or "policy",
             country_iso=_iso(_g(r, "geographies", "geography_iso")),
             title=_g(r, "document_title"),
-            decision_date=_g(r, "publication_ts", "document_date"),
+            decision_date=_yr(_g(r, "publication_ts", "document_date")),
             full_text=_g(r, "full_text"),
             source_pdf_url=url, source_url=url,
             source="CPR/CCLW", license="CC-BY-4.0",
