@@ -15,6 +15,13 @@ DATA = os.path.abspath(os.path.join(HERE, "..", "data"))
 MANIFEST = os.path.join(DATA, "_harvest_manifest.json")
 NORMALIZED = os.path.join(DATA, "records_normalized.csv")
 
+# Auto-load ingest/.env for local runs (no-op in CI, where env vars are set directly).
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(HERE, ".env"))
+except Exception:  # noqa: BLE001
+    pass
+
 # Canonical data columns for the `records` table (see db/schema.sql).
 # first_seen_at / last_updated_at are managed by the DB, not inserted here.
 COLUMNS = [
@@ -64,6 +71,8 @@ def get_conn():
     dsn = os.environ.get("DATABASE_URL")
     if not dsn:
         raise SystemExit("DATABASE_URL not set (see ingest/.env.example)")
+    if "sslmode=" not in dsn:
+        dsn += ("&" if "?" in dsn else "?") + "sslmode=require"
     return psycopg2.connect(dsn)
 
 

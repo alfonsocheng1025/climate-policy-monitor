@@ -13,6 +13,7 @@ export default function Shell({ children }) {
         <nav style={{ display: 'flex', gap: 16, fontSize: 14 }}>
           <Link href="/" style={link}>{t('nav_dashboard')}</Link>
           <Link href="/map" style={link}>{t('nav_map')}</Link>
+          <Link href="/live" style={link}>{t('whatsnew')}</Link>
           <Link href="/search" style={link}>{t('nav_search')}</Link>
           <Link href="/data" style={link}>{t('nav_data')}</Link>
         </nav>

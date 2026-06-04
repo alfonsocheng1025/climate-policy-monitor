@@ -2,9 +2,12 @@ name: Ingest Climate Policy Data
 
 on:
   schedule:
-    - cron: '0 3 * * 1'    # weekly bulk (Mon 03:00 UTC) — Tier A sources
-    # Tier B real-time pass (daily) will be added when those fetchers land.
-  workflow_dispatch: {}
+    - cron: '0 3 * * 1'    # weekly bulk (Mon 03:00 UTC) — Tier A + Tier B
+    - cron: '0 9 * * *'    # daily real-time pass — Tier B only (UNFCCC NDC diff, EUR-Lex)
+  workflow_dispatch: {}     # manual = full run
+
+env:
+  DAILY: ${{ github.event.schedule == '0 9 * * *' }}
 
 jobs:
   ingest:
@@ -21,18 +24,33 @@ jobs:
         run: |
           pip install -r ingest/requirements.txt
           pip install datasets || echo "datasets optional — CPR step will skip"
+
+      # --- Tier A bulk (weekly + manual only; skipped on the daily real-time pass) ---
       - name: Fetch — CPDB
+        if: env.DAILY != 'true'
         run: python ingest/fetch_cpdb.py || echo "skipped"
       - name: Fetch — OECD CAPMF
+        if: env.DAILY != 'true'
         run: python ingest/fetch_oecd_capmf.py || echo "skipped"
       - name: Fetch — Climate Watch
+        if: env.DAILY != 'true'
         run: python ingest/fetch_climatewatch.py || echo "skipped"
       - name: Fetch — World Bank Carbon Pricing
+        if: env.DAILY != 'true'
         run: python ingest/fetch_worldbank_carbon.py || echo "skipped"
       - name: Fetch — Net Zero Tracker
+        if: env.DAILY != 'true'
         run: python ingest/fetch_netzero.py || echo "skipped"
       - name: Fetch — CPR/CCLW (capped)
+        if: env.DAILY != 'true'
         run: python ingest/fetch_cpr.py || echo "skipped"
+
+      # --- Tier B real-time (every run, incl. the daily pass) ---
+      - name: Fetch — UNFCCC NDC Registry
+        run: python ingest/fetch_unfccc_ndc.py || echo "skipped"
+      - name: Fetch — EUR-Lex (EU climate law)
+        run: python ingest/fetch_eurlex.py || echo "skipped"
+
       - name: Normalize
         run: python ingest/normalize.py
       - name: Load to Postgres
@@ -42,5 +60,5 @@ jobs:
           git config user.name "data-bot"
           git config user.email "bot@users.noreply.github.com"
           git add data/records_normalized.csv
-          git commit -m "data snapshot $(date -u +%Y-%m-%d)" || echo "no changes"
+          git commit -m "data snapshot $(date -u +%Y-%m-%dT%H:%M)" || echo "no changes"
           git push || echo "push skipped"

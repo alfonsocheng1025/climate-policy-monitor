@@ -156,7 +156,50 @@ def from_netzero():
     return out
 
 
-SOURCES = [from_cpdb, from_capmf, from_climatewatch, from_cpr, from_worldbank, from_netzero]
+def from_unfccc_ndc():
+    df = common.safe_read_csv("unfccc_ndcs_raw.csv")
+    out = []
+    for _, r in df.iterrows():
+        code = _g(r, "Code", "code")
+        ver = _g(r, "Version", "version", default="")
+        ftype = _g(r, "FileType", "file_type", default="")
+        out.append(common.record(
+            doc_id=f"ndc:{code}:{ver}:{ftype}".rstrip(":"),
+            record_type="ndc",
+            country_iso=_iso(code),
+            title=_g(r, "Title", "Party"),
+            status=_g(r, "Status"),
+            version=str(ver) if ver else None,
+            submission_date=_g(r, "SubmissionDate", "submission_date"),
+            decision_date=_g(r, "SubmissionDate"),
+            source_pdf_url=_g(r, "EncodedAbsUrl"),
+            source_url="https://unfccc.int/NDCREG",
+            source="UNFCCC NDC Registry", license="Public domain",
+        ))
+    return out
+
+
+def from_eurlex():
+    df = common.safe_read_csv("eurlex_raw.csv")
+    out = []
+    for _, r in df.iterrows():
+        celex = _g(r, "celex", default=r.name)
+        url = _g(r, "url", "eli")
+        out.append(common.record(
+            doc_id=f"eurlex:{celex}",
+            record_type="law",
+            country_iso="EUU",  # EU as a supranational entity (no single ISO-3 country)
+            title=_g(r, "title"),
+            decision_date=_g(r, "date"),
+            submission_date=_g(r, "date"),
+            source_url=url, source_pdf_url=url,
+            source="EUR-Lex", license="EU reuse (attribution)",
+        ))
+    return out
+
+
+SOURCES = [from_cpdb, from_capmf, from_climatewatch, from_cpr, from_worldbank,
+           from_netzero, from_unfccc_ndc, from_eurlex]
 
 
 def normalize():
