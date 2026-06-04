@@ -98,6 +98,17 @@ def load():
         )
 
     conn.commit()
+
+    # Refresh dashboard materialized views (db/perf.sql); skip cleanly if not created yet.
+    for mv in ("mv_map_metrics", "mv_kpis", "mv_adoption"):
+        try:
+            cur.execute(f"REFRESH MATERIALIZED VIEW {mv}")
+            conn.commit()
+            print(f"[load] refreshed {mv}")
+        except Exception as e:  # noqa: BLE001
+            conn.rollback()
+            print(f"[load] refresh {mv} skipped: {e}")
+
     cur.close()
     conn.close()
     print(f"[load] upserted {total} rows across {len(by_source)} sources")

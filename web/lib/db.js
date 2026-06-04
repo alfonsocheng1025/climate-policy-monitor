@@ -14,43 +14,21 @@ globalThis.__cpmSql = sql;
 
 const METRICS = new Set(['coverage', 'stringency', 'price', 'netzero']);
 
+// Dashboard reads precomputed materialized views (db/perf.sql) — fast, refreshed on ingest.
 export async function getKpis() {
-  const rows = await sql`
-    SELECT
-      (SELECT count(*) FROM records WHERE record_type IN ('law','policy'))                       AS policies,
-      (SELECT count(DISTINCT country_iso) FROM records WHERE country_iso IS NOT NULL)             AS countries,
-      (SELECT count(*) FROM records
-         WHERE record_type IN ('law','policy')
-           AND left(decision_date,4) = to_char(now(),'YYYY'))                                    AS new_this_year,
-      (SELECT round(avg(metric_value)::numeric,1) FROM records
-         WHERE metric_name LIKE 'capmf_pol_stringency%')                                         AS avg_stringency,
-      (SELECT count(*) FROM records WHERE record_type='net_zero')                                AS net_zero,
-      (SELECT max(finished_at) FROM harvest_runs)                                                AS last_harvest`;
+  const rows = await sql`SELECT * FROM mv_kpis`;
   return rows[0];
 }
 
 export async function adoptionByYear() {
-  return await sql`SELECT year, sum(n)::int AS n FROM agg_adoption_by_year
-    WHERE year IS NOT NULL GROUP BY year ORDER BY year`;
+  return await sql`SELECT year, n FROM mv_adoption ORDER BY year`;
 }
 
 export async function mapMetric(metric) {
-  if (!METRICS.has(metric)) metric = 'coverage';
-  if (metric === 'stringency') {
-    return await sql`SELECT country_iso, round(avg(metric_value)::numeric, 2) AS value
-      FROM records WHERE metric_name LIKE 'capmf_pol_stringency%' AND country_iso IS NOT NULL
-      GROUP BY country_iso`;
-  }
-  if (metric === 'price') {
-    return await sql`SELECT country_iso, max(metric_value) AS value
-      FROM records WHERE metric_name='carbon_price' AND country_iso IS NOT NULL GROUP BY country_iso`;
-  }
-  if (metric === 'netzero') {
-    return await sql`SELECT country_iso, min(metric_value) AS value
-      FROM records WHERE record_type='net_zero' AND country_iso IS NOT NULL GROUP BY country_iso`;
-  }
-  return await sql`SELECT country_iso, count(*)::int AS value
-    FROM records WHERE country_iso IS NOT NULL GROUP BY country_iso`;
+  const col = METRICS.has(metric) ? metric : 'coverage';
+  // col is from the fixed METRICS set, not user free-text.
+  return await sql.unsafe(
+    `SELECT country_iso, ${col} AS value FROM mv_map_metrics WHERE ${col} IS NOT NULL`);
 }
 
 export async function queryRecords({ country, sector, status, recordType, limit = 200 }) {
