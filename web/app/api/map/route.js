@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { fullTextSearch } from '../../../lib/db';
+import { mapMetric } from '../../../lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
-  const q = new URL(req.url).searchParams.get('q') || '';
-  if (!q) return NextResponse.json([]);
+  const metric = new URL(req.url).searchParams.get('metric') || 'coverage';
   try {
-    return NextResponse.json(await fullTextSearch(q));
+    return NextResponse.json(await mapMetric(metric));
   } catch (e) {
     return NextResponse.json({ error: String(e?.message || e) });
   }

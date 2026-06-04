@@ -1,34 +1,38 @@
 'use client';
 import { useEffect, useState } from 'react';
-import FilterPanel from '../components/FilterPanel';
-import PolicyMap from '../components/PolicyMap';
-import PolicyTable from '../components/PolicyTable';
+import { useT } from '../lib/i18n';
+import KpiStrip from '../components/KpiStrip';
+import MetricMap from '../components/MetricMap';
+import AdoptionChart from '../components/AdoptionChart';
+import WhatsNewFeed from '../components/WhatsNewFeed';
 
 export default function Dashboard() {
-  const [rows, setRows] = useState([]);
-  const [agg, setAgg] = useState([]);
-  const [filters, setFilters] = useState({});
+  const { t } = useT();
+  const [stats, setStats] = useState({ kpis: null, adoption: [] });
+  const [map, setMap] = useState([]);
+  const [news, setNews] = useState([]);
 
   useEffect(() => {
-    const qs = new URLSearchParams(filters).toString();
-    fetch('/api/policies?' + qs).then(r => r.json()).then(setRows);
-  }, [filters]);
-
-  useEffect(() => {
-    fetch('/api/policies?agg=country').then(r => r.json()).then(setAgg);
+    fetch('/api/stats').then((r) => r.json()).then((d) => setStats(d || {})).catch(() => {});
+    fetch('/api/map?metric=coverage').then((r) => r.json())
+      .then((d) => setMap(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch('/api/whatsnew?limit=8').then((r) => r.json())
+      .then((d) => setNews(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
   return (
     <div>
-      <FilterPanel onChange={setFilters} />
+      <KpiStrip kpis={stats.kpis} />
       <section style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 540px' }}>
-          <h3>各国政策覆盖</h3>
-          <PolicyMap data={agg} />
+          <h3>{t('coverage_title')}</h3>
+          <MetricMap data={map} />
+          <h3 style={{ marginTop: 24 }}>{t('growth')}</h3>
+          <AdoptionChart data={stats.adoption} />
         </div>
-        <div style={{ flex: '1 1 360px' }}>
-          <h3>政策列表 ({rows.length})</h3>
-          <PolicyTable rows={rows} />
+        <div style={{ flex: '1 1 320px' }}>
+          <h3>🆕 {t('whatsnew')}</h3>
+          <WhatsNewFeed rows={news} limit={8} />
         </div>
       </section>
     </div>
