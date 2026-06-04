@@ -5,6 +5,7 @@ Each source has a mapper; mappers use defensive lookups because upstream column
 names vary by release — verify/adjust against the first real fetch of each source.
 """
 import re
+import json
 import pandas as pd
 import common
 
@@ -49,6 +50,18 @@ def _slug(s):
     return re.sub(r"[^a-z0-9]+", "-", str(s).lower()).strip("-")[:80]
 
 
+def _rawjson(r):
+    """Serialize the entire source row to a JSON string — preserves every field."""
+    d = {}
+    for k, v in r.items():
+        if v is None:
+            continue
+        if isinstance(v, float) and pd.isna(v):
+            continue
+        d[str(k)] = v if isinstance(v, (int, float, bool)) else str(v)
+    return json.dumps(d, ensure_ascii=False) if d else None
+
+
 def from_cpdb():
     df = common.safe_read_csv("cpdb_raw.csv")
     out = []
@@ -68,7 +81,7 @@ def from_cpdb():
             metric_name="cpdb_stringency" if sten is not None else None,
             metric_value=sten,
             source_url=_g(r, "reference") or "https://climatepolicydatabase.org",
-            source="CPDB", license="CC-BY-4.0",
+            source="CPDB", license="CC-BY-4.0", raw=_rawjson(r),
         ))
     return out
 
@@ -89,7 +102,7 @@ def from_capmf():
             metric_value=_num(val),
             metric_unit=_g(r, "Unit of measure", "UNIT_MEASURE"),
             metric_year=_year(yr), decision_date=str(yr) if yr else None,
-            source="OECD CAPMF", license="OECD",
+            source="OECD CAPMF", license="OECD", raw=_rawjson(r),
             source_url="https://www.oecd.org/en/data/datasets/"
                        "climate-actions-and-policies-measurement-framework.html",
         ))
@@ -106,7 +119,7 @@ def from_climatewatch():
             country_iso=_iso(_g(r, "iso_code3", "location", "iso")),
             title=_g(r, "indicator_name", "category", "sector"),
             full_text=_g(r, "value", "description"),
-            source="Climate Watch", license="CC-BY-4.0",
+            source="Climate Watch", license="CC-BY-4.0", raw=_rawjson(r),
             source_url="https://www.climatewatchdata.org",
         ))
     return out
@@ -128,7 +141,7 @@ def from_cpr():
             concepts=_g(r, "concepts"),
             full_text=_g(r, "full_text"),
             source_pdf_url=url, source_url=url,
-            source="CPR/CCLW", license="CC-BY-4.0",
+            source="CPR/CCLW", license="CC-BY-4.0", raw=_g(r, "doc_meta_json"),
         ))
     return out
 
@@ -156,7 +169,7 @@ def from_worldbank():
             status=_g(r, "Status"),
             metric_name="carbon_price", metric_value=price, metric_unit="USD/tCO2e",
             metric_year=_year(latest) if latest else None,
-            source="World Bank", license="CC-BY-4.0",
+            source="World Bank", license="CC-BY-4.0", raw=_rawjson(r),
             source_url="https://carbonpricingdashboard.worldbank.org",
         ))
     return out
@@ -174,7 +187,7 @@ def from_netzero():
             status=_g(r, "net_zero_status", "status", "target_status"),
             metric_name="net_zero_target_year",
             metric_value=_num(_g(r, "year", "target_year")),
-            source="Net Zero Tracker", license="CC-BY",
+            source="Net Zero Tracker", license="CC-BY", raw=_rawjson(r),
             source_url="https://zerotracker.net",
         ))
     return out
@@ -198,7 +211,7 @@ def from_unfccc_ndc():
             decision_date=_g(r, "SubmissionDate"),
             source_pdf_url=_g(r, "EncodedAbsUrl"),
             source_url="https://unfccc.int/NDCREG",
-            source="UNFCCC NDC Registry", license="Public domain",
+            source="UNFCCC NDC Registry", license="Public domain", raw=_rawjson(r),
         ))
     return out
 
@@ -217,7 +230,7 @@ def from_eurlex():
             decision_date=_g(r, "date"),
             submission_date=_g(r, "date"),
             source_url=url, source_pdf_url=url,
-            source="EUR-Lex", license="EU reuse (attribution)",
+            source="EUR-Lex", license="EU reuse (attribution)", raw=_rawjson(r),
         ))
     return out
 

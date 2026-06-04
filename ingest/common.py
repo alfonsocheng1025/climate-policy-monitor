@@ -29,7 +29,7 @@ COLUMNS = [
     "sector", "policy_instrument", "status", "decision_date", "submission_date", "version",
     "metric_name", "metric_value", "metric_unit", "metric_year",
     "concepts", "full_text", "source_url", "source_pdf_url",
-    "source", "license", "retrieved_at",
+    "source", "license", "raw", "retrieved_at",
 ]
 
 RECORD_TYPES = {"law", "policy", "ndc", "net_zero", "carbon_price", "litigation", "stringency_score"}

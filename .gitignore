@@ -17,12 +17,13 @@ out/
 .env.local
 .env*.local
 
-# Data: keep the normalized snapshot (reproducibility); ignore large/raw intermediates
+# Data: all intermediates are regenerable; Postgres is the store of record.
+# (Reproducibility comes from versioned sources + retrieved_at + the harvest_runs table.)
 data/*_raw.csv
 data/*.parquet
 data/_harvest_manifest.json
+data/records_normalized.csv
 !data/.gitkeep
-!data/records_normalized.csv
 
 # OS / editor
 .DS_Store

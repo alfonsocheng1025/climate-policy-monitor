@@ -55,10 +55,5 @@ jobs:
         run: python ingest/normalize.py
       - name: Load to Postgres
         run: python ingest/load_to_db.py
-      - name: Commit normalized snapshot
-        run: |
-          git config user.name "data-bot"
-          git config user.email "bot@users.noreply.github.com"
-          git add data/records_normalized.csv
-          git commit -m "data snapshot $(date -u +%Y-%m-%dT%H:%M)" || echo "no changes"
-          git push || echo "push skipped"
+        # Postgres is the store of record; the harvest_runs table is the audit trail.
+        # (No data snapshot is committed — the normalized CSV with raw JSON is large.)

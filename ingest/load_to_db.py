@@ -22,7 +22,7 @@ def _val(row, c):
             return int(float(v))
         except (TypeError, ValueError):
             return None
-    if c == "concepts":
+    if c in ("concepts", "raw"):
         try:
             json.loads(v)
             return v

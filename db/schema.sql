@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS records (
     source_pdf_url    TEXT,
     source            TEXT,                    -- 'CPDB', 'OECD CAPMF', ...
     license           TEXT,
+    raw               JSONB,                   -- complete original source row (every field preserved)
     retrieved_at      TIMESTAMPTZ,
     first_seen_at     TIMESTAMPTZ DEFAULT now(),
     last_updated_at   TIMESTAMPTZ DEFAULT now()
@@ -43,6 +44,10 @@ CREATE INDEX IF NOT EXISTS idx_rec_fts ON records USING gin(
     to_tsvector('simple',
         coalesce(title,'') || ' ' || coalesce(title_en,'') || ' ' || coalesce(full_text,''))
 );
+
+-- Upgrade an already-created table + index the raw payload for ad-hoc field queries.
+ALTER TABLE records ADD COLUMN IF NOT EXISTS raw JSONB;
+CREATE INDEX IF NOT EXISTS idx_rec_raw ON records USING gin(raw jsonb_path_ops);
 
 -- Per-run harvest transparency (powers the Mode 9 dashboard).
 CREATE TABLE IF NOT EXISTS harvest_runs (

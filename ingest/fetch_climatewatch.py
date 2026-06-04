@@ -11,7 +11,7 @@ import common
 BASE = "https://www.climatewatchdata.org/api/v1/data/ndc_content"
 OUT = "climatewatch_raw.csv"
 PER_PAGE = 500
-MAX_PAGES = int(os.environ.get("CW_MAX_PAGES", "40"))
+MAX_PAGES = int(os.environ.get("CW_MAX_PAGES", "2000"))  # safety ceiling (=1M rows); stops earlier on short/empty page
 UA = {"User-Agent": "ZJU-CMIC-policy-monitor"}
 
 
@@ -29,6 +29,8 @@ def fetch():
             if not data:
                 break
             rows.extend(data)
+            if len(data) < PER_PAGE:
+                break
             meta = (payload.get("meta") or {}) if isinstance(payload, dict) else {}
             if meta.get("page") and meta.get("total_pages") and meta["page"] >= meta["total_pages"]:
                 break

@@ -9,7 +9,7 @@ import requests
 import pandas as pd
 import common
 
-START = os.environ.get("CAPMF_START", "2000")
+START = os.environ.get("CAPMF_START", "1990")  # full available history
 END = os.environ.get("CAPMF_END", "2023")
 URL = (
     "https://sdmx.oecd.org/public/rest/data/"
