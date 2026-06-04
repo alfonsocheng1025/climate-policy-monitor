@@ -109,15 +109,20 @@ def from_capmf():
     return out
 
 
+CW_TYPE = {"ndc_content": "ndc", "lts_content": "lts", "net_zero_content": "net_zero"}
+
+
 def from_climatewatch():
     df = common.safe_read_csv("climatewatch_raw.csv")
     out = []
     for _, r in df.iterrows():
+        ds = _g(r, "_dataset") or "ndc_content"
         cid = _g(r, "id", "ndc_id", default=r.name)
         out.append(common.record(
-            doc_id=f"cw:{cid}", record_type="ndc",
+            doc_id=f"cw:{ds}:{cid}", record_type=CW_TYPE.get(ds, "ndc"),
             country_iso=_iso(_g(r, "iso_code3", "location", "iso")),
             title=_g(r, "indicator_name", "category", "sector"),
+            sector=_g(r, "sector"),
             full_text=_g(r, "value", "description"),
             source="Climate Watch", license="CC-BY-4.0", raw=_rawjson(r),
             source_url="https://www.climatewatchdata.org",
@@ -146,32 +151,65 @@ def from_cpr():
     return out
 
 
+WB_URL = "https://carbonpricingdashboard.worldbank.org"
+
+
 def from_worldbank():
     df = common.safe_read_csv("worldbank_carbon_raw.csv")
     if df.empty:
         return []
-    # Current price = the latest year-keyed column (headers like '2026' / '2026.0').
+    # Current price = latest year-keyed column (headers like '2026'/'2026.0'); Gen Info only.
     year_cols = [c for c in df.columns if re.fullmatch(r"\d{4}(\.0)?", str(c).strip())]
     year_cols.sort(key=lambda c: int(float(c)))
     latest = year_cols[-1] if year_cols else None
     out = []
     for _, r in df.iterrows():
-        name = _g(r, "Instrument name", "Name of the initiative", default=r.name)
-        if not name:
-            continue
-        price = _num(r[latest]) if latest is not None and latest in r.index else None
-        # NOTE: 'Jurisdiction covered' is a name (often subnational); ISO crosswalk is a TODO.
-        out.append(common.record(
-            doc_id=f"wbcp:{_slug(name)}", record_type="carbon_price",
-            subnational=_g(r, "Jurisdiction covered", "Jurisdiction"),
-            title=str(name),
-            policy_instrument=_g(r, "Type", "Instrument Type"),
-            status=_g(r, "Status"),
-            metric_name="carbon_price", metric_value=price, metric_unit="USD/tCO2e",
-            metric_year=_year(latest) if latest else None,
-            source="World Bank", license="CC-BY-4.0", raw=_rawjson(r),
-            source_url="https://carbonpricingdashboard.worldbank.org",
-        ))
+        sheet = str(_g(r, "_sheet") or "")
+        if sheet.startswith("Crediting"):
+            name = _g(r, "Mechanism", default=r.name)
+            if not name:
+                continue
+            out.append(common.record(
+                doc_id=f"wbcr:{_slug(name)}", record_type="carbon_crediting",
+                subnational=_g(r, "Administering Jurisdiction or organisation ",
+                               "Administering Jurisdiction or organisation"),
+                title=str(name),
+                policy_instrument=_g(r, "Administration"),
+                status=_g(r, "Status"),
+                decision_date=_yr(_g(r, "Year of Implementation")),
+                full_text=_g(r, "Description of the mechanism"),
+                source="World Bank", license="CC-BY-4.0", raw=_rawjson(r),
+                source_url=WB_URL,
+            ))
+        elif sheet.startswith("Cooperative"):
+            buyer = _g(r, "Buyer", default=r.name)
+            seller = _g(r, "Seller")
+            out.append(common.record(
+                doc_id=f"wbco:{_slug(str(buyer) + '-' + str(seller or ''))}",
+                record_type="cooperative_approach",
+                title=f"{buyer} -> {seller}" if seller else str(buyer),
+                status=_g(r, "Status of Agreement"),
+                decision_date=_yr(_g(r, "Year of Agreement")),
+                full_text=_g(r, "Notes"),
+                source="World Bank", license="CC-BY-4.0", raw=_rawjson(r),
+                source_url=WB_URL,
+            ))
+        else:  # Compliance_Gen Info
+            name = _g(r, "Instrument name", "Name of the initiative", default=r.name)
+            if not name:
+                continue
+            price = _num(r[latest]) if latest is not None and latest in r.index else None
+            out.append(common.record(
+                doc_id=f"wbcp:{_slug(name)}", record_type="carbon_price",
+                subnational=_g(r, "Jurisdiction covered", "Jurisdiction"),
+                title=str(name),
+                policy_instrument=_g(r, "Type", "Instrument Type"),
+                status=_g(r, "Status"),
+                metric_name="carbon_price", metric_value=price, metric_unit="USD/tCO2e",
+                metric_year=_year(latest) if latest else None,
+                source="World Bank", license="CC-BY-4.0", raw=_rawjson(r),
+                source_url=WB_URL,
+            ))
     return out
 
 

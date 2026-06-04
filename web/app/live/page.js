@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { useT } from '../../lib/i18n';
 import WhatsNewFeed from '../../components/WhatsNewFeed';
 
-const TYPES = ['', 'law', 'policy', 'ndc', 'net_zero', 'carbon_price'];
+const TYPES = ['', 'law', 'policy', 'ndc', 'lts', 'net_zero', 'carbon_price',
+  'carbon_crediting', 'cooperative_approach'];
 
 export default function LivePage() {
   const { t } = useT();

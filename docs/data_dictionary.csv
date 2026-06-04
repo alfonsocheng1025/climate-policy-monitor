@@ -1,6 +1,6 @@
 field,role,type,description,source
 doc_id,key,string,源前缀唯一标识(如 cpdb:123 / eurlex:32026R0667),All
-record_type,key,enum,law|policy|ndc|net_zero|carbon_price|litigation|stringency_score,All
+record_type,key,enum,law|policy|ndc|lts|net_zero|carbon_price|carbon_crediting|cooperative_approach|litigation|stringency_score,All
 country_iso,dim,string,ISO-3 国家代码(融合主键; EU 用 EUU),All
 subnational,dim,string,州/省/市或司法辖区,CPDB/World Bank
 title,field,text,政策/法律/记录名称,All

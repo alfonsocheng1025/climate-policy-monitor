@@ -4,7 +4,8 @@ import { useT } from '../lib/i18n';
 
 const SECTORS = ['', 'Electricity and heat', 'Transport', 'Industry', 'Buildings', 'Agriculture'];
 const STATUS = ['', 'In force', 'Planned', 'Ended'];
-const TYPES = ['', 'law', 'policy', 'ndc', 'net_zero', 'carbon_price', 'stringency_score'];
+const TYPES = ['', 'law', 'policy', 'ndc', 'lts', 'net_zero', 'carbon_price',
+  'carbon_crediting', 'cooperative_approach', 'stringency_score'];
 
 export default function FilterPanel({ onChange }) {
   const { t } = useT();
