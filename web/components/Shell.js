@@ -17,6 +17,7 @@ export default function Shell({ children }) {
           <Link href="/compare" style={link}>{t('nav_compare')}</Link>
           <Link href="/composition" style={link}>{t('nav_composition')}</Link>
           <Link href="/analysis" style={link}>{t('nav_analysis')}</Link>
+          <Link href="/cross" style={link}>{t('nav_cross')}</Link>
           <Link href="/live" style={link}>{t('whatsnew')}</Link>
           <Link href="/search" style={link}>{t('nav_search')}</Link>
           <Link href="/insights" style={link}>{t('nav_insights')}</Link>
