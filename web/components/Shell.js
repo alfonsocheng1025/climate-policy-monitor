@@ -59,7 +59,6 @@ export default function Shell({ children }) {
             <div style={{ maxWidth: 380 }}>
               <div style={{ fontWeight: 600 }}>{t('brand')}</div>
               <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>{t('program')}</div>
-              <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t('operated_by')}</div>
             </div>
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <Link href="/about">{t('nav_about')}</Link>

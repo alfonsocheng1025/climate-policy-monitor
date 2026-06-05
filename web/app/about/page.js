@@ -69,8 +69,8 @@ export default function AboutPage() {
       <div className="card">
         <div className="eyebrow">{zh ? '权属与许可' : 'Ownership & license'}</div>
         <p className="card__desc">{zh
-          ? '本平台的代码、设计与衍生可视化由「气候与科学传播研究计划」开发与维护,由浙江大学 CMIC 运营。原始数据集的著作权归各数据提供方所有。衍生的聚合视图与图表可在注明出处的前提下用于非商业的研究与教学。'
-          : 'The platform’s code, design and derived visualizations are developed and maintained by the Program on Climate and Science Communication (operated by ZJU-CMIC). Copyright in the underlying datasets belongs to their respective providers. Derived aggregate views and charts may be used for non-commercial research and teaching with attribution.'}</p>
+          ? '本平台的代码、设计与衍生可视化由「气候与科学传播研究计划」开发与维护。原始数据集的著作权归各数据提供方所有。衍生的聚合视图与图表可在注明出处的前提下用于非商业的研究与教学。'
+          : 'The platform’s code, design and derived visualizations are developed and maintained by the Program on Climate and Science Communication. Copyright in the underlying datasets belongs to their respective providers. Derived aggregate views and charts may be used for non-commercial research and teaching with attribution.'}</p>
         <p className="muted" style={{ fontSize: 12 }}>© 2026 {t('program')} · {t('foot_rights')}</p>
       </div>
     </div>
