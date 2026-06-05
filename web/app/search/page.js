@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { useT } from '../../lib/i18n';
+import { cname } from '../../lib/iso';
 
 export default function Search() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [q, setQ] = useState('');
   const [res, setRes] = useState([]);
   const [done, setDone] = useState(false);
@@ -28,7 +29,7 @@ export default function Search() {
         {res.map((d) => (
           <li key={d.doc_id} style={{ margin: '14px 0', borderBottom: '1px solid #eee', paddingBottom: 10 }}>
             <strong>{d.title}</strong>{' '}
-            <em style={{ color: '#789' }}>({d.country_iso || '—'} · {d.source})</em>
+            <em className="muted">({d.country_iso ? cname(d.country_iso, lang) : '—'} · {d.source})</em>
             <div dangerouslySetInnerHTML={{ __html: d.snippet || '' }}
               style={{ color: '#444', fontSize: 13, margin: '4px 0' }} />
             {(d.source_pdf_url || d.source_url) && (

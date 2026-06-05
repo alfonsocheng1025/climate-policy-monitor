@@ -147,3 +147,27 @@ input::placeholder { color:var(--color-text-faint); }
 .recharts-cartesian-axis line, .recharts-cartesian-axis-tick line { stroke:var(--color-border-strong) !important; }
 .recharts-default-tooltip { background:var(--color-surface) !important; border:1px solid var(--color-border) !important;
   border-radius:var(--radius-sm); color:var(--color-text) !important; }
+
+/* hero */
+.hero { position:relative; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-lg);
+  padding:clamp(2rem,5vw,4rem) clamp(1.5rem,4vw,3rem); margin-bottom:var(--space-8); background:var(--color-surface); }
+.hero__bg { position:absolute; inset:0; z-index:0; pointer-events:none;
+  background: radial-gradient(ellipse 80% 60% at 78% 15%, var(--color-primary-soft), transparent 60%),
+              radial-gradient(ellipse 55% 50% at 12% 85%, var(--color-accent-soft), transparent 70%); }
+.hero__grid { position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 100% 80% at 50% 25%, black 30%, transparent 80%);
+  mask-image: radial-gradient(ellipse 100% 80% at 50% 25%, black 30%, transparent 80%); }
+.hero__inner { position:relative; z-index:1; }
+.hero__title { font-size:var(--text-2xl); font-weight:600; letter-spacing:-0.03em; line-height:1.12;
+  margin:var(--space-2) 0 var(--space-3); max-width:22ch; }
+.hero__title .accent { color:var(--color-primary); }
+.hero__sub { color:var(--color-text-muted); max-width:62ch; font-size:var(--text-base); }
+
+/* skeleton */
+@keyframes shimmer { 0% { background-position:-400px 0; } 100% { background-position:400px 0; } }
+.skeleton { background:linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-surface-3) 50%, var(--color-surface-2) 75%);
+  background-size:800px 100%; animation:shimmer 1.4s infinite linear; border-radius:var(--radius-md); }
+.skel-box { height:280px; }
+.skel-kpi { height:64px; }

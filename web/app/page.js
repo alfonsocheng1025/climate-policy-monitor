@@ -13,37 +13,51 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ kpis: null, adoption: [] });
   const [map, setMap] = useState([]);
   const [news, setNews] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     fetch('/api/dashboard').then((r) => r.json()).then((d) => {
       setStats({ kpis: d.kpis, adoption: d.adoption || [] });
       setMap(Array.isArray(d.map) ? d.map : []);
       setNews(Array.isArray(d.news) ? d.news : []);
-    }).catch(() => {});
+    }).catch(() => {}).finally(() => setLoaded(true));
   }, []);
 
   return (
     <div>
-      <KpiStrip kpis={stats.kpis} />
+      <section className="hero">
+        <div className="hero__bg" /><div className="hero__grid" />
+        <div className="hero__inner">
+          <div className="eyebrow">ZJU-CMIC · CLIMATE POLICY MONITOR</div>
+          <h1 className="hero__title">{t('hero_title')}</h1>
+          <p className="hero__sub">{t('hero_sub')}</p>
+        </div>
+      </section>
+
+      {loaded
+        ? <KpiStrip kpis={stats.kpis} />
+        : <div className="kpi-grid">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="kpi skeleton skel-kpi" />)}</div>}
+
       <section style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 540px', minWidth: 0 }}>
           <div className="card">
             <div className="eyebrow">MAP</div>
             <h3 style={{ marginTop: 0 }}>{t('coverage_title')}</h3>
             <p className="card__desc">{t('m_coverage_desc')}</p>
-            <MetricMap data={map} onSelect={(iso) => router.push('/country/' + iso)} />
+            {loaded ? <MetricMap data={map} onSelect={(iso) => router.push('/country/' + iso)} />
+              : <div className="skeleton skel-box" />}
           </div>
           <div className="card">
             <div className="eyebrow">TREND</div>
             <h3 style={{ marginTop: 0 }}>{t('growth')}</h3>
-            <AdoptionChart data={stats.adoption} />
+            {loaded ? <AdoptionChart data={stats.adoption} /> : <div className="skeleton skel-box" />}
           </div>
         </div>
         <div style={{ flex: '1 1 320px', minWidth: 0 }}>
           <div className="card">
             <div className="eyebrow">🆕 LIVE</div>
             <h3 style={{ marginTop: 0 }}>{t('whatsnew')}</h3>
-            <WhatsNewFeed rows={news} limit={8} />
+            {loaded ? <WhatsNewFeed rows={news} limit={8} /> : <div className="skeleton skel-box" style={{ height: 300 }} />}
           </div>
         </div>
       </section>
