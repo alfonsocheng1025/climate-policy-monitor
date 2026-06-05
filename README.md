@@ -5,9 +5,9 @@
 本项目是 [ZJU-CMIC 气候与科学传播研究计划](https://research.newsfindsme.com/) 的第三个"监测站"，与
 **气候新闻观测站**（`monitor.newsfindsme.com`）、**气候论文监测站**（`pmonitor.newsfindsme.com`）并列。
 
-> ⚠️ **正在按 [`PLAN.md`](./PLAN.md) 重构。** 下表的原始三源脚手架（Perplexity 生成）正在被一套更全面、
-> 已核实（2026-06）的多源 + 实时采集方案取代。详细的数据源、数据模型与**可视化设计/模式**见 `PLAN.md`。
-> 当前 `ingest/` 与 `web/` 仍为原始脚手架。
+> 📖 **完整说明与操作手册见 [`HANDBOOK.md`](./HANDBOOK.md)** —— 采集、建库、部署、故障排查、添加数据源,一处看全。
+> 设计方向见 [`PLAN.md`](./PLAN.md)、融合层见 [`FUSION.md`](./FUSION.md)、开通流程见 [`SETUP.md`](./SETUP.md)。
+> 平台已按 8 源 + 实时方案建成并上线:**https://cpmonitor.newsfindsme.com**。
 
 ## 数据源（重构后，详见 PLAN.md §3）
 | 角色 | 代表源 | 内容 | 接入 |
