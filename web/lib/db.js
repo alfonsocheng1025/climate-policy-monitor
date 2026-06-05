@@ -74,10 +74,14 @@ export async function searchFacets() {
 
 export async function whatsNew(limit = 30) {
   const lim = Math.min(Number(limit) || 30, 100);
+  // `WHERE first_seen_at IS NOT NULL` + plain DESC lets the planner use
+  // idx_rec_seen (first_seen_at DESC) for a LIMIT scan, instead of sorting all
+  // ~673k rows (which `NULLS LAST` forced, since the index is NULLS FIRST).
   return await sql.unsafe(
     `SELECT doc_id, record_type, country_iso, title, source, source_pdf_url, source_url,
             first_seen_at, decision_date
-     FROM records ORDER BY first_seen_at DESC NULLS LAST LIMIT $1`, [lim]);
+     FROM records WHERE first_seen_at IS NOT NULL
+     ORDER BY first_seen_at DESC LIMIT $1`, [lim]);
 }
 
 export async function harvestRuns() {

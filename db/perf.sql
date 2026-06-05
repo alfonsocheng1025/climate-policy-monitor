@@ -8,6 +8,10 @@
 -- Helps the stringency aggregates + any metric_name LIKE 'prefix%' lookup.
 CREATE INDEX IF NOT EXISTS idx_rec_metric_name ON records (metric_name);
 
+-- Records list (/api/records, map page) orders by last_updated_at DESC — without
+-- this it sorts the whole ~673k-row table on every uncached request.
+CREATE INDEX IF NOT EXISTS idx_rec_updated ON records (last_updated_at DESC NULLS LAST);
+
 -- Per-country map metrics (coverage = laws/policies only — meaningful + small).
 DROP MATERIALIZED VIEW IF EXISTS mv_map_metrics;
 CREATE MATERIALIZED VIEW mv_map_metrics AS
