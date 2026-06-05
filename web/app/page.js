@@ -13,11 +13,11 @@ export default function Dashboard() {
   const [news, setNews] = useState([]);
 
   useEffect(() => {
-    fetch('/api/stats').then((r) => r.json()).then((d) => setStats(d || {})).catch(() => {});
-    fetch('/api/map?metric=coverage').then((r) => r.json())
-      .then((d) => setMap(Array.isArray(d) ? d : [])).catch(() => {});
-    fetch('/api/whatsnew?limit=8').then((r) => r.json())
-      .then((d) => setNews(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch('/api/dashboard').then((r) => r.json()).then((d) => {
+      setStats({ kpis: d.kpis, adoption: d.adoption || [] });
+      setMap(Array.isArray(d.map) ? d.map : []);
+      setNews(Array.isArray(d.news) ? d.news : []);
+    }).catch(() => {});
   }, []);
 
   return (
