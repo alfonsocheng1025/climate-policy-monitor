@@ -9,6 +9,7 @@ import { useT } from '../../../lib/i18n';
 import { cname } from '../../../lib/iso';
 import RecordTable from '../../../components/RecordTable';
 import InstrumentMix from '../../../components/InstrumentMix';
+import ExportButton from '../../../components/ExportButton';
 
 export default function CountryPage() {
   const { t, lang } = useT();
@@ -59,8 +60,10 @@ export default function CountryPage() {
 
       <section style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginTop: 8 }}>
         <div className="card" style={{ flex: '1 1 420px', minWidth: 0 }}>
-          <div className="eyebrow">STRINGENCY</div>
-          <h3 style={{ marginTop: 0 }}>{t('ctry_traj')}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+            <div><div className="eyebrow">STRINGENCY</div><h3 style={{ margin: 0 }}>{t('ctry_traj')}</h3></div>
+            <ExportButton rows={traj} name={iso + '_stringency'} />
+          </div>
           {!loaded ? <div className="skeleton skel-box" style={{ height: 240 }} />
             : traj.length ? (
               <ResponsiveContainer width="100%" height={240}>
@@ -75,8 +78,10 @@ export default function CountryPage() {
             ) : <p className="muted">{t('nodata')}</p>}
         </div>
         <div className="card" style={{ flex: '1 1 360px', minWidth: 0 }}>
-          <div className="eyebrow">MIX</div>
-          <h3 style={{ marginTop: 0 }}>{t('mix_title')}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+            <div><div className="eyebrow">MIX</div><h3 style={{ margin: 0 }}>{t('mix_title')}</h3></div>
+            <ExportButton rows={mix} name={iso + '_mix'} />
+          </div>
           <InstrumentMix rows={mix} />
         </div>
       </section>

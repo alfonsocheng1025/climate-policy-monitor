@@ -6,6 +6,7 @@ import { cname } from '../../lib/iso';
 import MetricMap from '../../components/MetricMap';
 import FilterPanel from '../../components/FilterPanel';
 import RecordTable from '../../components/RecordTable';
+import ExportButton from '../../components/ExportButton';
 
 const METRICS = ['coverage', 'stringency', 'price', 'netzero'];
 
@@ -40,6 +41,7 @@ export default function MapPage() {
             {t('m_' + m)}
           </button>
         ))}
+        <span style={{ marginLeft: 'auto' }}><ExportButton rows={map} name={'map_' + metric} /></span>
       </div>
       <p className="card__desc">{t('m_' + metric + '_desc')}</p>
       <section style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
