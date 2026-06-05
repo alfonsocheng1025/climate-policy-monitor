@@ -13,6 +13,7 @@ const NAV = [
 export default function Shell({ children }) {
   const { t, lang, setLang } = useT();
   const [theme, setTheme] = useState('dark');
+  const [menu, setMenu] = useState(false);
   useEffect(() => {
     let s = null;
     try { s = localStorage.getItem('cpm_theme'); } catch (e) {}
@@ -28,12 +29,12 @@ export default function Shell({ children }) {
     <>
       <header className="header">
         <div className="container header__inner">
-          <Link href="/" className="brand">
+          <Link href="/" className="brand" onClick={() => setMenu(false)}>
             <span className="brand__logo">🌍</span>
             <span className="brand__name"><b>{t('brand')}</b><small>ZJU-CMIC</small></span>
           </Link>
-          <nav className="nav">
-            {NAV.map(([href, key]) => <Link key={href} href={href}>{t(key)}</Link>)}
+          <nav className={'nav' + (menu ? ' nav--open' : '')}>
+            {NAV.map(([href, key]) => <Link key={href} href={href} onClick={() => setMenu(false)}>{t(key)}</Link>)}
           </nav>
           <div className="spacer" />
           <button className="icon-btn" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>
@@ -42,6 +43,7 @@ export default function Shell({ children }) {
           <button className="icon-btn" onClick={toggleTheme} aria-label="toggle theme">
             {theme === 'dark' ? '☀' : '☾'}
           </button>
+          <button className="icon-btn nav-toggle" onClick={() => setMenu((m) => !m)} aria-label="menu">☰</button>
         </div>
       </header>
       <main className="container">{children}</main>
