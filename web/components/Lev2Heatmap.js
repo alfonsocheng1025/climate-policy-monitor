@@ -9,7 +9,7 @@ export default function Lev2Heatmap({ rows }) {
   const countries = [...new Set(list.map((r) => r.country_iso))];
   const cell = {};
   list.forEach((r) => { cell[`${r.country_iso}|${r.area}`] = Number(r.stringency); });
-  const color = (v) => (v == null ? '#f5f5f5' : `rgba(11,61,46,${0.12 + 0.085 * v})`); // v in 0..10
+  const color = (v) => (v == null ? '#141d29' : `rgba(61,169,217,${0.12 + 0.085 * v})`); // v in 0..10
   return (
     <div style={{ overflow: 'auto' }}>
       <table style={{ borderCollapse: 'collapse', fontSize: 11 }}>
@@ -27,7 +27,7 @@ export default function Lev2Heatmap({ rows }) {
                 const v = cell[`${c}|${a}`];
                 return (
                   <td key={c} style={{ textAlign: 'center', padding: 6, background: color(v),
-                    color: v > 6 ? '#fff' : '#333' }}>{v != null ? v.toFixed(1) : ''}</td>
+                    color: v > 6 ? '#0a0f14' : '#cdd6e2' }}>{v != null ? v.toFixed(1) : ''}</td>
                 );
               })}
             </tr>

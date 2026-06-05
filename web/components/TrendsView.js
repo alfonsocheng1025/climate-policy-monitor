@@ -21,15 +21,15 @@ export default function TrendsView({ adoption, stringency }) {
           <AreaChart data={growth}>
             <defs>
               <linearGradient id="gt" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0b3d2e" stopOpacity={0.7} />
-                <stop offset="100%" stopColor="#0b3d2e" stopOpacity={0.05} />
+                <stop offset="0%" stopColor="#3da9d9" stopOpacity={0.7} />
+                <stop offset="100%" stopColor="#3da9d9" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
             <XAxis dataKey="year" tick={{ fontSize: 11 }} minTickGap={24} />
             <YAxis tick={{ fontSize: 11 }} width={48} />
             <Tooltip />
-            <Area type="monotone" dataKey="cumulative" stroke="#0b3d2e" fill="url(#gt)" strokeWidth={2} />
+            <Area type="monotone" dataKey="cumulative" stroke="#3da9d9" fill="url(#gt)" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>
       ) : <p style={{ color: '#789' }}>{t('nodata')}</p>}
@@ -42,7 +42,7 @@ export default function TrendsView({ adoption, stringency }) {
             <XAxis dataKey="year" tick={{ fontSize: 11 }} />
             <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} width={36} />
             <Tooltip />
-            <Line type="monotone" dataKey="v" stroke="#1d6b4f" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="v" stroke="#ff7a3d" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       ) : <p style={{ color: '#789' }}>{t('nodata')}</p>}

@@ -9,7 +9,7 @@ export default function BreadthDepthScatter({ rows }) {
   const data = (rows || []).map((r) => ({ x: Number(r.policies), y: Number(r.stringency), iso: r.country_iso }));
   if (!data.length) return <p style={{ color: '#789' }}>{t('nodata')}</p>;
   const tip = ({ payload }) => (payload && payload[0]
-    ? <div style={{ background: '#fff', border: '1px solid #ccc', padding: 6, fontSize: 12 }}>
+    ? <div style={{ background: '#0f1620', border: '1px solid #1f2b3d', color: '#e6edf5', padding: 6, fontSize: 12 }}>
         <b>{payload[0].payload.iso}</b> · {payload[0].payload.x} {t('bd_x')} · {t('bd_y')} {payload[0].payload.y}
       </div> : null);
   return (
@@ -21,7 +21,7 @@ export default function BreadthDepthScatter({ rows }) {
         <YAxis type="number" dataKey="y" domain={[0, 10]} tick={{ fontSize: 11 }}
           label={{ value: t('bd_y'), angle: -90, position: 'insideLeft', fontSize: 12 }} />
         <Tooltip cursor={{ strokeDasharray: '3 3' }} content={tip} />
-        <Scatter data={data} fill="#0b3d2e" fillOpacity={0.7}>
+        <Scatter data={data} fill="#3da9d9" fillOpacity={0.75}>
           <LabelList dataKey="iso" position="top" style={{ fontSize: 9, fill: '#567' }} />
         </Scatter>
       </ScatterChart>

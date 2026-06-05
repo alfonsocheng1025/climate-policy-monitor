@@ -33,10 +33,8 @@ export default function MapPage() {
         <span style={{ alignSelf: 'center', color: '#567' }}>{t('metric')}:</span>
         {METRICS.map((m) => (
           <button key={m} onClick={() => setMetric(m)}
-            style={{ padding: '6px 12px', borderRadius: 6, cursor: 'pointer',
-              border: '1px solid ' + (metric === m ? '#0b3d2e' : '#ccc'),
-              background: metric === m ? '#0b3d2e' : '#fff',
-              color: metric === m ? '#fff' : '#333' }}>
+            className={'chip' + (metric === m ? ' chip--active' : '')}
+            style={{ cursor: 'pointer', fontSize: 13, padding: '6px 12px', border: 0 }}>
             {t('m_' + m)}
           </button>
         ))}

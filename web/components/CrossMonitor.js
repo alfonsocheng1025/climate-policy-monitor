@@ -27,9 +27,9 @@ export default function CrossMonitor({ policy, papers, news, minYear = 2010 }) {
           label={{ value: t('cross_y'), angle: -90, position: 'insideLeft', fontSize: 11 }} />
         <Tooltip formatter={(v) => (v == null ? '—' : Math.round(v))} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
-        <Line type="monotone" dataKey="policy" name={t('cross_policy')} stroke="#0b3d2e" strokeWidth={2} dot={false} connectNulls />
-        <Line type="monotone" dataKey="papers" name={t('cross_papers')} stroke="#1d6b4f" strokeWidth={2} dot={false} connectNulls />
-        <Line type="monotone" dataKey="news" name={t('cross_news')} stroke="#c9a227" strokeWidth={2} dot={false} connectNulls />
+        <Line type="monotone" dataKey="policy" name={t('cross_policy')} stroke="#3da9d9" strokeWidth={2} dot={false} connectNulls />
+        <Line type="monotone" dataKey="papers" name={t('cross_papers')} stroke="#6ee0c8" strokeWidth={2} dot={false} connectNulls />
+        <Line type="monotone" dataKey="news" name={t('cross_news')} stroke="#ff7a3d" strokeWidth={2} dot={false} connectNulls />
       </LineChart>
     </ResponsiveContainer>
   );

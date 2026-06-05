@@ -12,7 +12,7 @@ export default function CompareView({ data }) {
   const max = Math.max(1, ...sectorCounts.map((r) => Number(r.n)));
   const strMap = Object.fromEntries(stringency.map((r) => [r.country_iso, r.v]));
   const nzMap = Object.fromEntries(netzero.map((r) => [r.country_iso, r.y]));
-  const color = (n) => (!n ? '#f5f5f5' : `rgba(11,61,46,${0.15 + 0.8 * n / max})`);
+  const color = (n) => (!n ? '#141d29' : `rgba(61,169,217,${0.15 + 0.8 * n / max})`);
 
   return (
     <div>
@@ -33,7 +33,7 @@ export default function CompareView({ data }) {
                   const n = cell[`${c}|${s}`];
                   return (
                     <td key={c} style={{ textAlign: 'center', padding: 6, background: color(n),
-                      color: n && n / max > 0.6 ? '#fff' : '#333' }}>{n || ''}</td>
+                      color: n && n / max > 0.6 ? '#0a0f14' : '#cdd6e2' }}>{n || ''}</td>
                   );
                 })}
               </tr>

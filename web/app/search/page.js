@@ -21,8 +21,7 @@ export default function Search() {
       <input value={q} onChange={(e) => setQ(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && go()}
         placeholder={t('search_ph')} style={{ padding: 8, width: 340 }} />
-      <button onClick={go} style={{ padding: '8px 16px', marginLeft: 8, background: '#0b3d2e',
-        color: '#fff', border: 0, borderRadius: 6, cursor: 'pointer' }}>
+      <button onClick={go} className="btn btn--primary" style={{ marginLeft: 8 }}>
         {t('search_btn')}
       </button>
       <ul style={{ listStyle: 'none', padding: 0 }}>

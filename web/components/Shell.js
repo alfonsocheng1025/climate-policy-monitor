@@ -1,37 +1,52 @@
 'use client';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useT } from '../lib/i18n';
+
+const NAV = [
+  ['/', 'nav_dashboard'], ['/map', 'nav_map'], ['/trends', 'nav_trends'],
+  ['/compare', 'nav_compare'], ['/composition', 'nav_composition'], ['/analysis', 'nav_analysis'],
+  ['/cross', 'nav_cross'], ['/live', 'whatsnew'], ['/search', 'nav_search'],
+  ['/insights', 'nav_insights'], ['/data', 'nav_data'],
+];
 
 export default function Shell({ children }) {
   const { t, lang, setLang } = useT();
-  const link = { color: '#cde', textDecoration: 'none' };
+  const [theme, setTheme] = useState('dark');
+  useEffect(() => {
+    let s = null;
+    try { s = localStorage.getItem('cpm_theme'); } catch (e) {}
+    if (s) { setTheme(s); document.documentElement.setAttribute('data-theme', s); }
+  }, []);
+  const toggleTheme = () => {
+    const n = theme === 'dark' ? 'light' : 'dark';
+    setTheme(n);
+    document.documentElement.setAttribute('data-theme', n);
+    try { localStorage.setItem('cpm_theme', n); } catch (e) {}
+  };
   return (
     <>
-      <header style={{ padding: '14px 24px', background: '#0b3d2e', color: '#fff',
-        display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
-        <strong style={{ fontSize: 18 }}>🌍 {t('brand')}</strong>
-        <nav style={{ display: 'flex', gap: 16, fontSize: 14 }}>
-          <Link href="/" style={link}>{t('nav_dashboard')}</Link>
-          <Link href="/map" style={link}>{t('nav_map')}</Link>
-          <Link href="/trends" style={link}>{t('nav_trends')}</Link>
-          <Link href="/compare" style={link}>{t('nav_compare')}</Link>
-          <Link href="/composition" style={link}>{t('nav_composition')}</Link>
-          <Link href="/analysis" style={link}>{t('nav_analysis')}</Link>
-          <Link href="/cross" style={link}>{t('nav_cross')}</Link>
-          <Link href="/live" style={link}>{t('whatsnew')}</Link>
-          <Link href="/search" style={link}>{t('nav_search')}</Link>
-          <Link href="/insights" style={link}>{t('nav_insights')}</Link>
-          <Link href="/data" style={link}>{t('nav_data')}</Link>
-        </nav>
-        <button onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}
-          style={{ marginLeft: 'auto', background: 'transparent', border: '1px solid #6a9',
-            color: '#cde', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
-          {lang === 'zh' ? 'EN' : '中'}
-        </button>
+      <header className="header">
+        <div className="container header__inner">
+          <Link href="/" className="brand">
+            <span className="brand__logo">🌍</span>
+            <span className="brand__name"><b>{t('brand')}</b><small>ZJU-CMIC</small></span>
+          </Link>
+          <nav className="nav">
+            {NAV.map(([href, key]) => <Link key={href} href={href}>{t(key)}</Link>)}
+          </nav>
+          <div className="spacer" />
+          <button className="icon-btn" onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')}>
+            {lang === 'zh' ? 'EN' : '中'}
+          </button>
+          <button className="icon-btn" onClick={toggleTheme} aria-label="toggle theme">
+            {theme === 'dark' ? '☀' : '☾'}
+          </button>
+        </div>
       </header>
-      <main style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>{children}</main>
-      <footer style={{ padding: '16px 24px', color: '#789', fontSize: 12, textAlign: 'center' }}>
-        {t('foot')} · {t('program')}
+      <main className="container">{children}</main>
+      <footer className="footer">
+        <div className="container footer__inner">{t('foot')} · {t('program')}</div>
       </footer>
     </>
   );

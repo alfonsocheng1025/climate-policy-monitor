@@ -25,9 +25,9 @@ export default function BivariateMap({ rows }) {
   const bin = (v, q) => (v == null || Number.isNaN(v) ? -1 : (v <= q[0] ? 0 : (v <= q[1] ? 1 : 2)));
   const color = (iso) => {
     const xi = bin(cov[iso], qc);
-    if (xi < 0) return '#f0f0f0';
+    if (xi < 0) return '#141d29';
     const yi = bin(str[iso], qs);
-    if (yi < 0) return '#d9d9d9';
+    if (yi < 0) return '#2c3a52';
     return PAL[yi][xi];
   };
   return (
@@ -36,7 +36,7 @@ export default function BivariateMap({ rows }) {
         <Geographies geography={GEO}>
           {({ geographies }) => geographies.map((geo) => {
             const iso = geo.properties.iso_a3 || geo.id;
-            return <Geography key={geo.rsmKey} geography={geo} fill={color(iso)} stroke="#fff" strokeWidth={0.3}
+            return <Geography key={geo.rsmKey} geography={geo} fill={color(iso)} stroke="#0b1117" strokeWidth={0.3}
               style={{ default: { outline: 'none' }, hover: { outline: 'none' }, pressed: { outline: 'none' } }} />;
           })}
         </Geographies>

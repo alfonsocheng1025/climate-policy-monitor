@@ -24,15 +24,24 @@ export default function Dashboard() {
     <div>
       <KpiStrip kpis={stats.kpis} />
       <section style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 540px' }}>
-          <h3>{t('coverage_title')}</h3>
-          <MetricMap data={map} />
-          <h3 style={{ marginTop: 24 }}>{t('growth')}</h3>
-          <AdoptionChart data={stats.adoption} />
+        <div style={{ flex: '1 1 540px', minWidth: 0 }}>
+          <div className="card">
+            <div className="eyebrow">MAP</div>
+            <h3 style={{ marginTop: 0 }}>{t('coverage_title')}</h3>
+            <MetricMap data={map} />
+          </div>
+          <div className="card">
+            <div className="eyebrow">TREND</div>
+            <h3 style={{ marginTop: 0 }}>{t('growth')}</h3>
+            <AdoptionChart data={stats.adoption} />
+          </div>
         </div>
-        <div style={{ flex: '1 1 320px' }}>
-          <h3>🆕 {t('whatsnew')}</h3>
-          <WhatsNewFeed rows={news} limit={8} />
+        <div style={{ flex: '1 1 320px', minWidth: 0 }}>
+          <div className="card">
+            <div className="eyebrow">🆕 LIVE</div>
+            <h3 style={{ marginTop: 0 }}>{t('whatsnew')}</h3>
+            <WhatsNewFeed rows={news} limit={8} />
+          </div>
         </div>
       </section>
     </div>

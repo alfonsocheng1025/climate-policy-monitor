@@ -24,10 +24,8 @@ export default function LivePage() {
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0 14px' }}>
         {TYPES.map((ty) => (
           <button key={ty || 'all'} onClick={() => setType(ty)}
-            style={{ padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 13,
-              border: '1px solid ' + (type === ty ? '#0b3d2e' : '#ccc'),
-              background: type === ty ? '#0b3d2e' : '#fff',
-              color: type === ty ? '#fff' : '#333' }}>
+            className={'chip' + (type === ty ? ' chip--active' : '')}
+            style={{ cursor: 'pointer', fontSize: 13, padding: '5px 11px', border: 0 }}>
             {ty || t('f_all')}
           </button>
         ))}

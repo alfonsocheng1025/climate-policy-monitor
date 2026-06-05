@@ -12,11 +12,11 @@ export default function MetricMap({ data, invert = false, onSelect }) {
   const max = vals.length ? Math.max(...vals) : 1;
   const color = (iso) => {
     const v = map[iso];
-    if (v === undefined || Number.isNaN(v)) return '#eee';
+    if (v === undefined || Number.isNaN(v)) return '#141d29';
     const span = max - min || 1;
     let t = (v - min) / span;
     if (invert) t = 1 - t;
-    return `rgba(11,61,46,${0.18 + 0.78 * t})`;
+    return `rgba(61,169,217,${0.18 + 0.78 * t})`;
   };
   return (
     <ComposableMap projectionConfig={{ scale: 145 }} style={{ width: '100%', height: 'auto' }}>
@@ -26,9 +26,9 @@ export default function MetricMap({ data, invert = false, onSelect }) {
             const iso = geo.properties.iso_a3 || geo.id;
             return (
               <Geography key={geo.rsmKey} geography={geo}
-                fill={color(iso)} stroke="#fff" strokeWidth={0.3}
+                fill={color(iso)} stroke="#0b1117" strokeWidth={0.3}
                 onClick={() => onSelect && iso && onSelect(iso)}
-                style={{ default: { outline: 'none' }, hover: { fill: '#1d6b4f', outline: 'none', cursor: onSelect ? 'pointer' : 'default' },
+                style={{ default: { outline: 'none' }, hover: { fill: '#5cc1ef', outline: 'none', cursor: onSelect ? 'pointer' : 'default' },
                   pressed: { outline: 'none' } }} />
             );
           })

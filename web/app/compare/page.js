@@ -17,8 +17,7 @@ export default function ComparePage() {
       <input value={q} onChange={(e) => setQ(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && go()}
         placeholder={t('cmp_pick')} style={{ padding: 8, width: 340 }} />
-      <button onClick={go} style={{ padding: '8px 16px', marginLeft: 8, background: '#0b3d2e',
-        color: '#fff', border: 0, borderRadius: 6, cursor: 'pointer' }}>{t('cmp_go')}</button>
+      <button onClick={go} className="btn btn--primary" style={{ marginLeft: 8 }}>{t('cmp_go')}</button>
       <div style={{ marginTop: 16 }}>
         {data && (data.countries && data.countries.length
           ? <CompareView data={data} />

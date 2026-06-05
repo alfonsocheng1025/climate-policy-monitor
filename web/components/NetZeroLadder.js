@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import { useT } from '../lib/i18n';
 
-const LF_COLOR = { 1: '#cccccc', 2: '#c9a227', 3: '#5bb38a', 4: '#1d6b4f', 5: '#0b3d2e' };
+const LF_COLOR = { 1: '#4d5b71', 2: '#f5cd5b', 3: '#6ee0c8', 4: '#3da9d9', 5: '#ff7a3d' };
 
 export default function NetZeroLadder({ rows }) {
   const { t } = useT();
@@ -14,7 +14,7 @@ export default function NetZeroLadder({ rows }) {
   if (!data.length) return <p style={{ color: '#789' }}>{t('nodata')}</p>;
   const lf = (v) => t('lf' + v) || v;
   const tip = ({ payload }) => (payload && payload[0]
-    ? <div style={{ background: '#fff', border: '1px solid #ccc', padding: 6, fontSize: 12 }}>
+    ? <div style={{ background: '#0f1620', border: '1px solid #1f2b3d', color: '#e6edf5', padding: 6, fontSize: 12 }}>
         <b>{payload[0].payload.iso}</b> · {payload[0].payload.x} · {payload[0].payload.label || lf(payload[0].payload.y)}
       </div> : null);
   return (

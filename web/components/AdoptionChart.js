@@ -14,14 +14,14 @@ export default function AdoptionChart({ data }) {
       <AreaChart data={series} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0b3d2e" stopOpacity={0.7} />
-            <stop offset="100%" stopColor="#0b3d2e" stopOpacity={0.05} />
+            <stop offset="0%" stopColor="#3da9d9" stopOpacity={0.7} />
+            <stop offset="100%" stopColor="#3da9d9" stopOpacity={0.05} />
           </linearGradient>
         </defs>
         <XAxis dataKey="year" tick={{ fontSize: 11 }} minTickGap={24} />
         <YAxis tick={{ fontSize: 11 }} width={40} />
         <Tooltip />
-        <Area type="monotone" dataKey="cumulative" stroke="#0b3d2e" fill="url(#g)" strokeWidth={2} />
+        <Area type="monotone" dataKey="cumulative" stroke="#3da9d9" fill="url(#g)" strokeWidth={2} />
       </AreaChart>
     </ResponsiveContainer>
   );

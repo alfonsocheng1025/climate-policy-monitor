@@ -31,12 +31,11 @@ export default function CountryPage() {
     <div>
       <Link href="/map" style={{ color: '#1d6b4f' }}>&larr; {t('nav_map')}</Link>
       <h2>{iso}</h2>
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', margin: '8px 0 20px' }}>
+      <div className="kpi-grid">
         {cards.map(([l, v]) => (
-          <div key={l} style={{ flex: '1 1 150px', background: '#f0f4f2', border: '1px solid #e0e8e4',
-            borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#0b3d2e' }}>{v ?? '—'}</div>
-            <div style={{ fontSize: 12, color: '#567' }}>{l}</div>
+          <div key={l} className="kpi">
+            <div className="kpi__val">{v ?? '—'}</div>
+            <div className="kpi__label">{l}</div>
           </div>
         ))}
       </div>

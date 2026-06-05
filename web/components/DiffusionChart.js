@@ -7,8 +7,8 @@ import { useT } from '../lib/i18n';
 const FAMILIES = ['carbon_pricing', 'regulation', 'subsidy_fiscal', 'target_governance',
   'rdd_innovation', 'information_voluntary'];
 const COLORS = {
-  carbon_pricing: '#0b3d2e', regulation: '#b8860b', subsidy_fiscal: '#1d6b4f',
-  target_governance: '#8aa', rdd_innovation: '#3a8f6c', information_voluntary: '#c9a227',
+  carbon_pricing: '#3da9d9', regulation: '#ff7a3d', subsidy_fiscal: '#6ee0c8',
+  target_governance: '#f5cd5b', rdd_innovation: '#b285ff', information_voluntary: '#ff6b8a',
 };
 
 export default function DiffusionChart({ rows }) {

@@ -19,12 +19,11 @@ export default function KpiStrip({ kpis }) {
     [t('kpi_last'), last],
   ];
   return (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', margin: '8px 0 20px' }}>
+    <div className="kpi-grid">
       {cells.map(([label, val]) => (
-        <div key={label} style={{ flex: '1 1 150px', minWidth: 130, background: '#f0f4f2',
-          border: '1px solid #e0e8e4', borderRadius: 10, padding: '12px 14px' }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#0b3d2e' }}>{val}</div>
-          <div style={{ fontSize: 12, color: '#567' }}>{label}</div>
+        <div key={label} className="kpi">
+          <div className="kpi__val">{val}</div>
+          <div className="kpi__label">{label}</div>
         </div>
       ))}
     </div>

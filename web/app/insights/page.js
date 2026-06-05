@@ -13,7 +13,7 @@ export default function InsightsPage() {
     <div>
       <h2>{t('nav_insights')}</h2>
       <p style={{ color: '#567' }}>{t('ins_blurb')}</p>
-      <section style={{ borderLeft: '3px solid #0b3d2e', padding: '4px 0 4px 16px', margin: '18px 0' }}>
+      <section style={{ borderLeft: '3px solid #3da9d9', padding: '4px 0 4px 16px', margin: '18px 0' }}>
         <h3>The exponential rise of climate law / 气候立法的指数级增长</h3>
         <p style={{ color: '#444', fontSize: 14 }}>
           Cumulative climate laws and policies have grown sharply, accelerating around the 2015

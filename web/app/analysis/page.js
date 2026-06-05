@@ -8,11 +8,6 @@ import BivariateMap from '../../components/BivariateMap';
 import InstrumentMix from '../../components/InstrumentMix';
 import Lev2Heatmap from '../../components/Lev2Heatmap';
 
-const BTN = {
-  padding: '6px 14px', marginLeft: 8, background: '#0b3d2e',
-  color: '#fff', border: 0, borderRadius: 6, cursor: 'pointer',
-};
-
 export default function AnalysisPage() {
   const { t } = useT();
   const [a, setA] = useState({ breadthDepth: [], netzero: [], promiseAction: [], bivariate: [] });
@@ -51,7 +46,7 @@ export default function AnalysisPage() {
       <div style={{ margin: '8px 0' }}>
         <input value={mixQ} onChange={(e) => setMixQ(e.target.value.toUpperCase())}
           onKeyDown={(e) => e.key === 'Enter' && loadMix(mixQ)} style={{ padding: 6, width: 300 }} />
-        <button onClick={() => loadMix(mixQ)} style={BTN}>{t('cmp_go')}</button>
+        <button onClick={() => loadMix(mixQ)} className="btn btn--primary" style={{ marginLeft: 8 }}>{t('cmp_go')}</button>
       </div>
       <InstrumentMix rows={mix} />
 
@@ -59,7 +54,7 @@ export default function AnalysisPage() {
       <div style={{ margin: '8px 0' }}>
         <input value={hq} onChange={(e) => setHq(e.target.value.toUpperCase())}
           onKeyDown={(e) => e.key === 'Enter' && loadHeat(hq)} style={{ padding: 6, width: 300 }} />
-        <button onClick={() => loadHeat(hq)} style={BTN}>{t('cmp_go')}</button>
+        <button onClick={() => loadHeat(hq)} className="btn btn--primary" style={{ marginLeft: 8 }}>{t('cmp_go')}</button>
       </div>
       <Lev2Heatmap rows={heat} />
     </div>
