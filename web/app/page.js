@@ -1,4 +1,4 @@
-import { getKpis, adoptionByYear, mapMetric, whatsNew } from '../lib/db';
+import { getKpis, adoptionByYear, mapMetric, whatsNew, withTimeout } from '../lib/db';
 import DashboardClient from '../components/DashboardClient';
 
 // ISR: render the dashboard to static HTML with the data already embedded,
@@ -8,9 +8,9 @@ export const revalidate = 1800;
 
 async function getData() {
   try {
-    const [kpis, adoption, map, news] = await Promise.all([
+    const [kpis, adoption, map, news] = await withTimeout(Promise.all([
       getKpis(), adoptionByYear(), mapMetric('coverage'), whatsNew(8),
-    ]);
+    ]));
     // JSON-normalize so postgres.js rows / Date values serialize cleanly to the
     // client component.
     return JSON.parse(JSON.stringify({ kpis, adoption, map, news }));

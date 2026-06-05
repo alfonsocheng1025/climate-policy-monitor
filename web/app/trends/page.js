@@ -1,4 +1,4 @@
-import { trends, diffusion } from '../../lib/db';
+import { trends, diffusion, withTimeout } from '../../lib/db';
 import TrendsClient from '../../components/TrendsClient';
 
 // ISR: embed trends + diffusion data in the static HTML, regenerated every 30 min
@@ -7,7 +7,7 @@ export const revalidate = 1800;
 
 async function getData() {
   try {
-    const [tr, di] = await Promise.all([trends(), diffusion()]);
+    const [tr, di] = await withTimeout(Promise.all([trends(), diffusion()]));
     return JSON.parse(JSON.stringify({
       adoption: (tr && tr.adoption) || [],
       stringency: (tr && tr.stringency) || [],

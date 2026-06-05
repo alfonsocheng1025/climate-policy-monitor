@@ -12,6 +12,20 @@ const sql = globalThis.__cpmSql || postgres(process.env.POSTGRES_URL || '', {
 });
 globalThis.__cpmSql = sql;
 
+// Cap a DB call so build-time static generation can never hang (the Vercel build
+// sandbox may not reach Supabase). On timeout the caller's try/catch falls back to
+// empty data; ISR + the client self-heal then fill it in at runtime, where the DB
+// is reachable.
+export function withTimeout(promise, ms = 12000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      const id = setTimeout(() => reject(new Error('db timeout')), ms);
+      if (id && id.unref) id.unref();
+    }),
+  ]);
+}
+
 const METRICS = new Set(['coverage', 'stringency', 'price', 'netzero']);
 
 // Dashboard reads precomputed materialized views (db/perf.sql) — fast, refreshed on ingest.
