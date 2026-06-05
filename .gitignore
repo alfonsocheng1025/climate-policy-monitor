@@ -25,6 +25,9 @@ data/_harvest_manifest.json
 data/records_normalized.csv
 !data/.gitkeep
 
+# Generated intermediate HTML for PDF export (PDFs themselves are committed)
+*.gen.html
+
 # OS / editor
 .DS_Store
 Thumbs.db

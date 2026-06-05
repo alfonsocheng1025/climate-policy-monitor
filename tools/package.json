@@ -1,0 +1,10 @@
+{
+  "name": "cpm-tools",
+  "private": true,
+  "type": "module",
+  "description": "Doc tooling — generate HANDBOOK PDFs (marked + mermaid, printed via local Chrome/Edge headless).",
+  "dependencies": {
+    "marked": "^12.0.2",
+    "mermaid": "^11.4.1"
+  }
+}

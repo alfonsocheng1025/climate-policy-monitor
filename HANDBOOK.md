@@ -2,6 +2,8 @@
 
 > 本手册是整个项目的「总说明书 + 运维操作手册」。读完它,你应当能独立完成:**采集数据、初始化数据库、本地开发、部署上线、排查故障、添加新数据源**。
 >
+> 英文版:[`HANDBOOK.en.md`](./HANDBOOK.en.md) · PDF:`HANDBOOK.pdf` / `HANDBOOK.en.pdf`(由 `tools/build-pdf.mjs` 生成)
+>
 > 配套文档(各有侧重,本手册是入口):
 > - [`README.md`](./README.md) — 快速上手
 > - [`PLAN.md`](./PLAN.md) — 产品方向与可视化设计
@@ -49,26 +51,18 @@
 
 三层,共享一张 Postgres 表:
 
-```
-  ┌─ 采集 ingest/ (Python) ─────────────────────────────┐
-  │ fetch_*.py  ──>  data/*_raw.csv                       │
-  │                       │                                │
-  │                  normalize.py  ──> data/records_normalized.csv
-  │                       │                                │
-  │                  load_to_db.py ──┐                     │
-  └──────────────────────────────────┼─────────────────────┘
-                                      ▼
-                         ┌─ Supabase Postgres ─┐
-                         │  records (主表)       │
-                         │  harvest_runs (审计)  │
-                         │  mv_* (看板物化视图)   │
-                         │  fact_* (融合视图)     │
-                         └──────────┬────────────┘
-                                    ▼
-        ┌─ Web web/ (Next.js 14, Vercel) ────────────────┐
-        │  app/api/*  (17 个只读 API,边缘缓存)            │
-        │  app/*      (页面:看板/地图/趋势/分析/…)         │
-        └─────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+  subgraph ING["采集 ingest/ · Python"]
+    F["fetch_*.py × 8"] --> RAW["data/*_raw.csv"]
+    RAW --> NORM["normalize.py"] --> CSV["records_normalized.csv"]
+    CSV --> LOAD["load_to_db.py"]
+  end
+  CI["GitHub Actions · cron"] -. "月度全量 / 每日实时" .-> F
+  LOAD -->|"upsert ON CONFLICT(doc_id)"| DB[("Supabase Postgres<br/>records · harvest_runs<br/>mv_* · fact_*")]
+  DB --> API["web/app/api/* · 17 路由 · 边缘缓存"]
+  API --> PAGES["页面:看板 / 地图 / 趋势 / 分析 …"]
+  USER(("用户")) --> PAGES
 ```
 
 - **采集**只写 Postgres;中间 CSV 都是可重生的临时产物(已 gitignore,不入库不提交)。
@@ -79,6 +73,19 @@
 - **`doc_id` 是带来源前缀的主键**(`cpdb:123`、`cpr:…`、`ndc:CHN:…`),`load_to_db.py` 用 `ON CONFLICT (doc_id) DO UPDATE` 幂等 upsert,重复采集不会产生脏数据。
 - **`raw` JSONB 列保留每条记录的完整原始字段**(高频大源 OECD/ndc_content 为省空间省略 raw)。
 - **`record_type` 区分异构记录**:`law | policy | ndc | lts | net_zero | carbon_price | carbon_crediting | cooperative_approach | stringency_score | litigation`。
+
+**请求链路(为何国内慢、缓存如何起作用):**
+
+```mermaid
+flowchart LR
+  B(("浏览器")) -->|"请求页面/接口"| EDGE["Vercel 边缘缓存<br/>s-maxage≈30min + SWR"]
+  EDGE -->|"命中 HIT(秒回)"| B
+  EDGE -->|"未命中 MISS"| FN["Next.js 路由 / ISR 再生<br/>(运行时)"]
+  FN --> DB[("Supabase<br/>物化视图 mv_*")]
+  DB --> FN --> EDGE
+```
+
+> 国内访问慢的瓶颈是 **浏览器 → Vercel 边缘** 这一跳(大陆无 PoP + GFW + 代理),**不是**后面的服务器/数据库。详见 §12。
 
 ---
 
@@ -113,8 +120,9 @@ climate-policy-platform/
 │  ├─ public/               # countries-110m.json(世界地图,本地打包,不走 CDN)
 │  └─ package.json
 ├─ docs/data_dictionary.csv # 字段 → 来源映射
+├─ tools/build-pdf.mjs      # 生成 HANDBOOK.pdf / HANDBOOK.en.pdf(Chrome headless)
 ├─ .github/workflows/ingest.yml  # 定时采集 CI
-├─ HANDBOOK.md (本文) / README.md / PLAN.md / FUSION.md / SETUP.md / CLAUDE.md
+├─ HANDBOOK.md (本文) / HANDBOOK.en.md / README.md / PLAN.md / FUSION.md / SETUP.md / CLAUDE.md
 └─ .gitignore               # 忽略 .env / node_modules / data 中间产物
 ```
 
@@ -220,6 +228,16 @@ python ingest/load_to_db.py          # 入库(需 DATABASE_URL)
 ### 7.4 自动采集(GitHub Actions,推荐)
 配置文件:[`.github/workflows/ingest.yml`](./.github/workflows/ingest.yml)
 
+```mermaid
+flowchart TD
+  M["cron: 0 3 1 * *<br/>每月 1 号 03:00 UTC"] --> FULL["全量:Tier A 大源<br/>CPDB·CAPMF·CW·WB·NZT·CPR + Tier B"]
+  WD["workflow_dispatch<br/>手动触发"] --> FULL
+  D["cron: 0 9 * * *<br/>每天 09:00 UTC"] --> RT["仅实时:UNFCCC NDC · EUR-Lex"]
+  FULL --> NL["normalize.py → load_to_db.py<br/>(自动 REFRESH mv_*)"]
+  RT --> NL
+  NL --> DB[("Supabase Postgres")]
+```
+
 - **触发**:
   - `cron: '0 3 1 * *'` —— **每月 1 号 03:00 UTC**,跑**全量**(Tier A 大源 + Tier B)。
   - `cron: '0 9 * * *'` —— **每天 09:00 UTC**,只跑**实时源**(UNFCCC NDC、EUR-Lex)。
@@ -244,7 +262,41 @@ python ingest/load_to_db.py          # 入库(需 DATABASE_URL)
 
 > 这些脚本**可安全重复执行**(`IF NOT EXISTS` / `CREATE OR REPLACE` / `DROP ... IF EXISTS`)。
 
-### 8.2 核心表 `records`(列见 `ingest/common.py` 的 `COLUMNS` 与 `db/schema.sql`)
+### 8.2 核心表结构
+
+```mermaid
+erDiagram
+  records {
+    text doc_id PK
+    text record_type
+    text country_iso
+    text title
+    text sector
+    text policy_instrument
+    text status
+    text decision_date
+    text metric_name
+    float metric_value
+    int metric_year
+    jsonb concepts
+    text full_text
+    text source
+    jsonb raw
+    timestamptz first_seen_at
+    timestamptz last_updated_at
+  }
+  harvest_runs {
+    bigserial id PK
+    text source
+    int fetched
+    int upserted
+    int new_records
+    text status
+    timestamptz finished_at
+  }
+  records ||..|| harvest_runs : "按 source 名称关联(非外键)"
+```
+
 主键 `doc_id`;`record_type` 区分类型;`country_iso`(ISO-3)是融合键;`metric_name`/`metric_value`/`metric_year` 是通用指标槽;`raw` JSONB 存完整原始行;`first_seen_at`/`last_updated_at` 由 DB 维护(insert 默认、conflict 时刷新)。
 
 > **四处列定义必须同步**(改一处常要改全部):`db/schema.sql` / `ingest/common.py` 的 `COLUMNS` / `ingest/load_to_db.py` 的 `INSERT_COLS` / `docs/data_dictionary.csv`。`web/lib/db.js` 只 SELECT 子集——改列名时同步它的查询。
@@ -409,8 +461,11 @@ $env:POSTGRES_URL="…6543/postgres"; npm run dev   # 本地开发
 npm run build                                       # 生产构建(同 Vercel)
 
 # —— 发布 ——
-git add web ingest db docs HANDBOOK.md .github      # 显式路径!别 git add -A
+git add web ingest db docs HANDBOOK.md HANDBOOK.en.md tools .github   # 显式路径!别 git add -A
 git commit -m "…"; git push                          # 推 main → Vercel 自动部署
+
+# —— 生成 PDF(需 Node;用本机 Chrome/Edge 无头打印) ——
+node tools/build-pdf.mjs                              # 产出 HANDBOOK.pdf / HANDBOOK.en.pdf
 
 # —— 自动采集 ——
 # GitHub → Actions → "Ingest Climate Policy Data" → Run workflow(手动全量)
