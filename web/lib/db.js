@@ -48,7 +48,8 @@ export async function queryRecords({ country, sector, status, recordType, limit 
   return await sql.unsafe(q, vals);
 }
 
-export async function fullTextSearch(term) {
+export async function fullTextSearch(term, opts = {}) {
+  const { country, type, source } = opts;
   return await sql`
     SELECT doc_id, record_type, country_iso, title, source, source_pdf_url, source_url,
            ts_headline('simple', coalesce(full_text, coalesce(title,'')),
@@ -57,7 +58,18 @@ export async function fullTextSearch(term) {
     WHERE to_tsvector('simple',
             coalesce(title,'') || ' ' || coalesce(title_en,'') || ' ' || coalesce(full_text,''))
           @@ plainto_tsquery('simple', ${term})
+      ${country ? sql`AND country_iso = ${country}` : sql``}
+      ${type ? sql`AND record_type = ${type}` : sql``}
+      ${source ? sql`AND source = ${source}` : sql``}
     LIMIT 100`;
+}
+
+export async function searchFacets() {
+  const [types, sources] = await Promise.all([
+    sql`SELECT record_type, count(*)::int AS n FROM records GROUP BY record_type ORDER BY n DESC`,
+    sql`SELECT source, count(*)::int AS n FROM records GROUP BY source ORDER BY n DESC`,
+  ]);
+  return { types, sources };
 }
 
 export async function whatsNew(limit = 30) {
