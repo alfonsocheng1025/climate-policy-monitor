@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useT } from '../lib/i18n';
 import KpiStrip from '../components/KpiStrip';
 import MetricMap from '../components/MetricMap';
@@ -8,6 +9,7 @@ import WhatsNewFeed from '../components/WhatsNewFeed';
 
 export default function Dashboard() {
   const { t } = useT();
+  const router = useRouter();
   const [stats, setStats] = useState({ kpis: null, adoption: [] });
   const [map, setMap] = useState([]);
   const [news, setNews] = useState([]);
@@ -28,7 +30,8 @@ export default function Dashboard() {
           <div className="card">
             <div className="eyebrow">MAP</div>
             <h3 style={{ marginTop: 0 }}>{t('coverage_title')}</h3>
-            <MetricMap data={map} />
+            <p className="card__desc">{t('m_coverage_desc')}</p>
+            <MetricMap data={map} onSelect={(iso) => router.push('/country/' + iso)} />
           </div>
           <div className="card">
             <div className="eyebrow">TREND</div>

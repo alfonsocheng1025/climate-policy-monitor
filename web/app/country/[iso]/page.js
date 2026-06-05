@@ -6,10 +6,11 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import { useT } from '../../../lib/i18n';
+import { cname } from '../../../lib/iso';
 import RecordTable from '../../../components/RecordTable';
 
 export default function CountryPage() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const params = useParams();
   const iso = String(params.iso || '').toUpperCase();
   const [d, setD] = useState(null);
@@ -29,8 +30,8 @@ export default function CountryPage() {
 
   return (
     <div>
-      <Link href="/map" style={{ color: '#1d6b4f' }}>&larr; {t('nav_map')}</Link>
-      <h2>{iso}</h2>
+      <Link href="/map" className="muted">&larr; {t('nav_map')}</Link>
+      <h2>{cname(iso, lang)} <span className="muted" style={{ fontSize: '0.6em', fontFamily: 'var(--font-mono)' }}>{iso}</span></h2>
       <div className="kpi-grid">
         {cards.map(([l, v]) => (
           <div key={l} className="kpi">

@@ -7,13 +7,12 @@ const STATUS = ['', 'In force', 'Planned', 'Ended'];
 const TYPES = ['', 'law', 'policy', 'ndc', 'lts', 'net_zero', 'carbon_price',
   'carbon_crediting', 'cooperative_approach', 'stringency_score'];
 
-export default function FilterPanel({ onChange }) {
+export default function FilterPanel({ value = {}, onChange }) {
   const { t } = useT();
-  const [f, setF] = useState({});
+  const f = value;
   const upd = (k, v) => {
     const n = { ...f, [k]: v };
     if (!v) delete n[k];
-    setF(n);
     onChange(n);
   };
   const sel = (k, opts, label) => (

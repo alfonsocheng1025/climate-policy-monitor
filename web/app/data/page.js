@@ -38,11 +38,6 @@ export default function DataPage() {
           ))}
         </tbody>
       </table>
-      <h4 style={{ marginTop: 24 }}>{t('download')}</h4>
-      <p style={{ fontSize: 13 }}>
-        <a href="/api/records?limit=1000">/api/records?limit=1000</a> ·{' '}
-        <a href="/api/harvest">/api/harvest</a>
-      </p>
     </div>
   );
 }

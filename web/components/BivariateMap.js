@@ -1,5 +1,6 @@
 'use client';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
+import { NUM2ISO } from '../lib/iso';
 import { useT } from '../lib/i18n';
 
 const GEO = '/countries-110m.json';
@@ -35,7 +36,7 @@ export default function BivariateMap({ rows }) {
       <ComposableMap projectionConfig={{ scale: 145 }} style={{ width: '100%', height: 'auto' }}>
         <Geographies geography={GEO}>
           {({ geographies }) => geographies.map((geo) => {
-            const iso = geo.properties.iso_a3 || geo.id;
+            const iso = NUM2ISO[String(Number(geo.id))] || geo.properties.iso_a3 || geo.id;
             return <Geography key={geo.rsmKey} geography={geo} fill={color(iso)} stroke="#0b1117" strokeWidth={0.3}
               style={{ default: { outline: 'none' }, hover: { outline: 'none' }, pressed: { outline: 'none' } }} />;
           })}
