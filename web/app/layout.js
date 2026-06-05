@@ -7,8 +7,17 @@ const sans = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap
 const jb = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jb', display: 'swap' });
 
 export const metadata = {
+  metadataBase: new URL('https://cpmonitor.newsfindsme.com'),
   title: 'Climate Policy Monitor · 全球气候政策监测',
-  description: '全球气候政策可视化与检索平台 · ZJU-CMIC Program on Climate and Science Communication',
+  description: '全球气候政策可视化与检索平台 · Program on Climate and Science Communication',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'Climate Policy Monitor · 全球气候政策监测',
+    description: 'Global climate policy — laws, stringency, NDCs, net-zero & carbon pricing — unified search, visualization and cross-analysis.',
+    url: 'https://cpmonitor.newsfindsme.com',
+    siteName: 'Climate Policy Monitor',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({ children }) {

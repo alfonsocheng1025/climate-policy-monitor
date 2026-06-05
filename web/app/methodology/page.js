@@ -77,8 +77,8 @@ export default function MethodologyPage() {
         <div className="eyebrow">{zh ? '建议引用' : 'Suggested citation'}</div>
         <p className="card__desc" style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>
           {zh
-            ? '气候与科学传播研究计划(2026).全球气候政策监测. https://climate-policy-monitor.vercel.app'
-            : 'Program on Climate and Science Communication (2026). Climate Policy Monitor. https://climate-policy-monitor.vercel.app'}
+            ? '气候与科学传播研究计划(2026).全球气候政策监测. https://cpmonitor.newsfindsme.com'
+            : 'Program on Climate and Science Communication (2026). Climate Policy Monitor. https://cpmonitor.newsfindsme.com'}
         </p>
         <p className="muted" style={{ fontSize: 12 }}>{t('foot_disclaimer')}</p>
       </div>
