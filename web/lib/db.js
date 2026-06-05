@@ -191,11 +191,13 @@ export async function bivariate() {
           WHERE metric_name LIKE 'capmf_pol_stringency%' GROUP BY 1) s ON s.country_iso = c.country_iso`;
 }
 
-// Per-country instrument-family counts (feature vectors for archetype clustering).
-export async function archetypeVectors() {
-  return await sql`
-    SELECT country_iso, canon_instrument, count(*)::int AS n
-    FROM v_records_canon
-    WHERE canon_instrument IS NOT NULL AND record_type IN ('law','policy') AND country_iso IS NOT NULL
-    GROUP BY 1, 2`;
+// Per-country instrument-family counts for the (transparent) policy-mix view.
+export async function instrumentMix(isos) {
+  const list = (isos || []).filter(Boolean).slice(0, 10);
+  if (!list.length) return [];
+  return await sql.unsafe(
+    `SELECT country_iso, canon_instrument, count(*)::int AS n
+     FROM v_records_canon
+     WHERE canon_instrument IS NOT NULL AND record_type IN ('law','policy') AND country_iso = ANY($1)
+     GROUP BY 1, 2`, [list]);
 }
