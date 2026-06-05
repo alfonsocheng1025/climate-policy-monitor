@@ -1,12 +1,16 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useT } from '../../lib/i18n';
 import { cname } from '../../lib/iso';
-import MetricMap from '../../components/MetricMap';
 import FilterPanel from '../../components/FilterPanel';
 import RecordTable from '../../components/RecordTable';
 import ExportButton from '../../components/ExportButton';
+
+const MetricMap = dynamic(() => import('../../components/MetricMap'), {
+  ssr: false, loading: () => <div className="skeleton skel-box" />,
+});
 
 const METRICS = ['coverage', 'stringency', 'price', 'netzero'];
 

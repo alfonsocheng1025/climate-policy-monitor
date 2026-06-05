@@ -1,11 +1,19 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useT } from '../lib/i18n';
 import KpiStrip from '../components/KpiStrip';
-import MetricMap from '../components/MetricMap';
-import AdoptionChart from '../components/AdoptionChart';
 import WhatsNewFeed from '../components/WhatsNewFeed';
+
+// Code-split the heavy map (react-simple-maps + d3-geo) and chart (recharts) so
+// they aren't in the landing page's initial JS bundle — faster first paint.
+const MetricMap = dynamic(() => import('../components/MetricMap'), {
+  ssr: false, loading: () => <div className="skeleton skel-box" />,
+});
+const AdoptionChart = dynamic(() => import('../components/AdoptionChart'), {
+  ssr: false, loading: () => <div className="skeleton skel-box" />,
+});
 
 export default function Dashboard() {
   const { t } = useT();
