@@ -6,15 +6,18 @@ import CrossMonitor from '../../components/CrossMonitor';
 export default function CrossPage() {
   const { t } = useT();
   const [d, setD] = useState({ policy: [], papers: [], news: [] });
+  const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    fetch('/api/cross').then((r) => r.json()).then((x) => setD(x || {})).catch(() => {});
+    fetch('/api/cross').then((r) => r.json()).then((x) => setD(x || {}))
+      .catch(() => {}).finally(() => setLoaded(true));
   }, []);
   return (
     <div>
       <h2>{t('nav_cross')}</h2>
-      <p style={{ color: '#567' }}>{t('cross_blurb')}</p>
-      <CrossMonitor policy={d.policy} papers={d.papers} news={d.news} />
-      <p style={{ color: '#789', fontSize: 12, marginTop: 8 }}>{t('cross_note')}</p>
+      <p className="muted">{t('cross_blurb')}</p>
+      {loaded ? <CrossMonitor policy={d.policy} papers={d.papers} news={d.news} />
+        : <div className="skeleton skel-box" />}
+      <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>{t('cross_note')}</p>
     </div>
   );
 }
