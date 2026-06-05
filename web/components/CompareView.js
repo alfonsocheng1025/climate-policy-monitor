@@ -21,14 +21,14 @@ export default function CompareView({ data }) {
         <table style={{ borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', padding: 6 }} />
+              <th style={{ textAlign: 'left', padding: 6, position: 'sticky', left: 0, background: 'var(--color-surface)', zIndex: 1 }} />
               {countries.map((c) => <th key={c} style={{ padding: 6 }}>{c}</th>)}
             </tr>
           </thead>
           <tbody>
             {sectors.map((s) => (
               <tr key={s}>
-                <td style={{ padding: 6, whiteSpace: 'nowrap' }}>{s}</td>
+                <td title={s} style={{ padding: 6, maxWidth: 160, minWidth: 110, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.25, position: 'sticky', left: 0, background: 'var(--color-surface)' }}>{s}</td>
                 {countries.map((c) => {
                   const n = cell[`${c}|${s}`];
                   return (

@@ -7,7 +7,13 @@ const NAV = [
   ['/', 'nav_dashboard'], ['/map', 'nav_map'], ['/trends', 'nav_trends'],
   ['/compare', 'nav_compare'], ['/composition', 'nav_composition'], ['/analysis', 'nav_analysis'],
   ['/cross', 'nav_cross'], ['/live', 'whatsnew'], ['/search', 'nav_search'],
-  ['/insights', 'nav_insights'], ['/data', 'nav_data'],
+  ['/insights', 'nav_insights'], ['/methodology', 'nav_methodology'], ['/about', 'nav_about'], ['/data', 'nav_data'],
+];
+
+const SIBLINGS = [
+  ['https://research.newsfindsme.com', 'Research Portal'],
+  ['https://monitor.newsfindsme.com', 'News Monitor'],
+  ['https://pmonitor.newsfindsme.com', 'Paper Monitor'],
 ];
 
 export default function Shell({ children }) {
@@ -31,7 +37,7 @@ export default function Shell({ children }) {
         <div className="container header__inner">
           <Link href="/" className="brand" onClick={() => setMenu(false)}>
             <span className="brand__logo">🌍</span>
-            <span className="brand__name"><b>{t('brand')}</b><small>ZJU-CMIC</small></span>
+            <span className="brand__name"><b>{t('brand')}</b><small>{t('org')}</small></span>
           </Link>
           <nav className={'nav' + (menu ? ' nav--open' : '')}>
             {NAV.map(([href, key]) => <Link key={href} href={href} onClick={() => setMenu(false)}>{t(key)}</Link>)}
@@ -48,7 +54,29 @@ export default function Shell({ children }) {
       </header>
       <main className="container">{children}</main>
       <footer className="footer">
-        <div className="container footer__inner">{t('foot')} · {t('program')}</div>
+        <div className="container">
+          <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', justifyContent: 'space-between', padding: '8px 0' }}>
+            <div style={{ maxWidth: 380 }}>
+              <div style={{ fontWeight: 600 }}>{t('brand')}</div>
+              <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>{t('program')}</div>
+              <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t('operated_by')}</div>
+            </div>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              <Link href="/about">{t('nav_about')}</Link>
+              <Link href="/methodology">{t('nav_methodology')}</Link>
+              <Link href="/data">{t('nav_data')}</Link>
+            </div>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              {SIBLINGS.map(([href, label]) => (
+                <a key={href} href={href} target="_blank" rel="noreferrer">{label} ↗</a>
+              ))}
+            </div>
+          </div>
+          <div className="muted" style={{ fontSize: 12, borderTop: '1px solid var(--color-divider)', paddingTop: 10, marginTop: 6 }}>
+            <div>{t('foot')}</div>
+            <div style={{ marginTop: 4 }}>© 2026 {t('program')} · {t('foot_rights')} · {t('foot_disclaimer')}</div>
+          </div>
+        </div>
       </footer>
     </>
   );

@@ -55,7 +55,10 @@ export const DICT = {
     hero_title: '全球气候政策,一处看全',
     hero_sub: '汇聚 7+ 权威数据源、约 67 万条记录——法律与政策、政策强度评分、NDC 与净零承诺、碳定价——统一检索、可视化与交叉分析。',
     foot: '数据来源 Sources: CPDB · OECD CAPMF · Climate Watch · CPR/CCLW · World Bank · Net Zero Tracker',
-    program: 'ZJU-CMIC 气候与科学传播研究计划',
+    program: '气候与科学传播研究计划 (Program on Climate and Science Communication)',
+    org: '气候与科学传播研究计划', operated_by: '由浙江大学 CMIC 运营',
+    nav_about: '关于', nav_methodology: '说明',
+    foot_rights: '保留所有权利', foot_disclaimer: '仅供研究与教育用途;数据按“现状”提供,不构成任何建议。',
   },
   en: {
     brand: 'Climate Policy Monitor',
@@ -110,7 +113,10 @@ export const DICT = {
     hero_title: 'Global climate policy, in one place',
     hero_sub: 'Seven+ authoritative sources and ~670k records — laws & policies, policy-stringency scores, NDCs & net-zero pledges, carbon pricing — unified search, visualization and cross-analysis.',
     foot: 'Sources: CPDB · OECD CAPMF · Climate Watch · CPR/CCLW · World Bank · Net Zero Tracker',
-    program: 'ZJU-CMIC Program on Climate and Science Communication',
+    program: 'Program on Climate and Science Communication',
+    org: 'Climate & Science Communication', operated_by: 'Operated by ZJU-CMIC',
+    nav_about: 'About', nav_methodology: 'Docs',
+    foot_rights: 'All rights reserved', foot_disclaimer: 'For research & education only; data provided “as is” with no warranty.',
   },
 };
 

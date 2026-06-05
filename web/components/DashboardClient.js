@@ -36,7 +36,7 @@ export default function DashboardClient({ data }) {
       <section className="hero">
         <div className="hero__bg" /><div className="hero__grid" />
         <div className="hero__inner">
-          <div className="eyebrow">ZJU-CMIC · CLIMATE POLICY MONITOR</div>
+          <div className="eyebrow">{t('org')} · Climate Policy Monitor</div>
           <h1 className="hero__title">{t('hero_title')}</h1>
           <p className="hero__sub">{t('hero_sub')}</p>
         </div>

@@ -15,14 +15,14 @@ export default function Lev2Heatmap({ rows }) {
       <table style={{ borderCollapse: 'collapse', fontSize: 11 }}>
         <thead>
           <tr>
-            <th style={{ textAlign: 'left', padding: 6 }} />
+            <th style={{ textAlign: 'left', padding: 6, position: 'sticky', left: 0, background: 'var(--color-surface)', zIndex: 1 }} />
             {countries.map((c) => <th key={c} style={{ padding: 6 }}>{c}</th>)}
           </tr>
         </thead>
         <tbody>
           {areas.map((a) => (
             <tr key={a}>
-              <td style={{ padding: 6, whiteSpace: 'nowrap', maxWidth: 280 }}>{a}</td>
+              <td title={a} style={{ padding: 6, maxWidth: 170, minWidth: 120, whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: 1.25, position: 'sticky', left: 0, background: 'var(--color-surface)' }}>{a}</td>
               {countries.map((c) => {
                 const v = cell[`${c}|${a}`];
                 return (
