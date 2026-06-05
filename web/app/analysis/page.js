@@ -7,56 +7,42 @@ import NetZeroLadder from '../../components/NetZeroLadder';
 import BivariateMap from '../../components/BivariateMap';
 import InstrumentMix from '../../components/InstrumentMix';
 import Lev2Heatmap from '../../components/Lev2Heatmap';
+import CountryPicker from '../../components/CountryPicker';
 
 export default function AnalysisPage() {
   const { t } = useT();
   const [a, setA] = useState({ breadthDepth: [], netzero: [], promiseAction: [], bivariate: [] });
-  const [mixQ, setMixQ] = useState('DEU,CHN,USA,JPN,GBR,FRA,IND,BRA');
+  const [mixSel, setMixSel] = useState(['DEU', 'CHN', 'USA', 'JPN', 'GBR', 'FRA', 'IND', 'BRA']);
   const [mix, setMix] = useState([]);
-  const [hq, setHq] = useState('DEU,CHN,USA,JPN,GBR,FRA');
+  const [heatSel, setHeatSel] = useState(['DEU', 'CHN', 'USA', 'JPN', 'GBR', 'FRA']);
   const [heat, setHeat] = useState([]);
-  const loadMix = (q) => fetch('/api/instrument-mix?c=' + encodeURIComponent(q))
-    .then((r) => r.json()).then((x) => setMix(Array.isArray(x) ? x : [])).catch(() => {});
-  const loadHeat = (q) => fetch('/api/lev2?c=' + encodeURIComponent(q))
-    .then((r) => r.json()).then((x) => setHeat(Array.isArray(x) ? x : [])).catch(() => {});
+  useEffect(() => { fetch('/api/analysis').then((r) => r.json()).then((x) => setA(x || {})).catch(() => {}); }, []);
   useEffect(() => {
-    fetch('/api/analysis').then((r) => r.json()).then((x) => setA(x || {})).catch(() => {});
-    loadMix('DEU,CHN,USA,JPN,GBR,FRA,IND,BRA');
-    loadHeat('DEU,CHN,USA,JPN,GBR,FRA');
-  }, []);
+    if (mixSel.length) fetch('/api/instrument-mix?c=' + mixSel.join(',')).then((r) => r.json())
+      .then((x) => setMix(Array.isArray(x) ? x : [])).catch(() => {}); else setMix([]);
+  }, [mixSel]);
+  useEffect(() => {
+    if (heatSel.length) fetch('/api/lev2?c=' + heatSel.join(',')).then((r) => r.json())
+      .then((x) => setHeat(Array.isArray(x) ? x : [])).catch(() => {}); else setHeat([]);
+  }, [heatSel]);
 
   const H = ({ k }) => (
     <>
       <h3 style={{ marginTop: 28 }}>{t(k + '_title')}</h3>
-      <p style={{ color: '#567', fontSize: 13 }}>{t(k + '_blurb')}</p>
+      <p className="muted" style={{ fontSize: 13 }}>{t(k + '_blurb')}</p>
     </>
   );
 
   return (
     <div>
       <h2>{t('nav_analysis')}</h2>
-      <p style={{ color: '#567' }}>{t('analysis_blurb')}</p>
-
+      <p className="muted">{t('analysis_blurb')}</p>
       <H k="bd" /><BreadthDepthScatter rows={a.breadthDepth} />
       <H k="pa" /><PromiseActionScatter rows={a.promiseAction} />
       <H k="nz" /><NetZeroLadder rows={a.netzero} />
       <H k="bivar" /><BivariateMap rows={a.bivariate} />
-
-      <H k="mix" />
-      <div style={{ margin: '8px 0' }}>
-        <input value={mixQ} onChange={(e) => setMixQ(e.target.value.toUpperCase())}
-          onKeyDown={(e) => e.key === 'Enter' && loadMix(mixQ)} style={{ padding: 6, width: 300 }} />
-        <button onClick={() => loadMix(mixQ)} className="btn btn--primary" style={{ marginLeft: 8 }}>{t('cmp_go')}</button>
-      </div>
-      <InstrumentMix rows={mix} />
-
-      <H k="lev2" />
-      <div style={{ margin: '8px 0' }}>
-        <input value={hq} onChange={(e) => setHq(e.target.value.toUpperCase())}
-          onKeyDown={(e) => e.key === 'Enter' && loadHeat(hq)} style={{ padding: 6, width: 300 }} />
-        <button onClick={() => loadHeat(hq)} className="btn btn--primary" style={{ marginLeft: 8 }}>{t('cmp_go')}</button>
-      </div>
-      <Lev2Heatmap rows={heat} />
+      <H k="mix" /><CountryPicker value={mixSel} onChange={setMixSel} max={10} /><InstrumentMix rows={mix} />
+      <H k="lev2" /><CountryPicker value={heatSel} onChange={setHeatSel} max={8} /><Lev2Heatmap rows={heat} />
     </div>
   );
 }

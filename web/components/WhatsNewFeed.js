@@ -1,8 +1,9 @@
 'use client';
 import { useT } from '../lib/i18n';
+import { cname } from '../lib/iso';
 
 export default function WhatsNewFeed({ rows, limit }) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const list = (Array.isArray(rows) ? rows : []).slice(0, limit || 999);
   if (!list.length) return <p className="muted">{t('nodata')}</p>;
   return (
@@ -12,7 +13,7 @@ export default function WhatsNewFeed({ rows, limit }) {
         return (
           <li key={d.doc_id} className="feed__item">
             <div className="feed__meta">
-              {when} · {d.source}{d.country_iso ? ` · ${d.country_iso}` : ''}
+              {when} · {d.source}{d.country_iso ? ` · ${cname(d.country_iso, lang)}` : ''}
             </div>
             <div className="feed__title">{d.title || d.doc_id}</div>
             <div style={{ fontSize: 12 }}>
